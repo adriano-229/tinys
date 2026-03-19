@@ -5,9 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Token {
-    private TokenType type;
-    private String value;
+public class FileChar {
+    private char value;
+    private int col;
     private int row;
-    private int column;
 }
