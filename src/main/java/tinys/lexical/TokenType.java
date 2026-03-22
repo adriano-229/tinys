@@ -19,6 +19,10 @@ public enum TokenType {
     RET,
     WHILE,
     PUB,
+    SELF,
+    DIV,
+    VOID,
+    ARRAY,
     FOR,
     IN,
 

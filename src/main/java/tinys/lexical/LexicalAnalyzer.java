@@ -6,80 +6,312 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
 
     private final FileReader reader;
     private FileChar currentChar;
+    private FileChar nextChar;
 
     public LexicalAnalyzer(FileReader reader) {
         this.reader = reader;
         this.currentChar = reader.nextChar();
-    }
-
-    private void advance() {
-        currentChar = reader.nextChar();
+        this.nextChar = reader.nextChar();
     }
 
     @Override
     public Token nextToken() {
-
         while (currentChar != null) {
+            char value = currentChar.getValue();
 
-            char c = currentChar.value();
-
-            // 1. skip whitespace
-            if (Character.isWhitespace(c)) {
+            if (isWhitespaceChar(value)) {
                 advance();
                 continue;
             }
 
-            // 2. identifier
-            if (Character.isLetter(c)) {
-                return identifier();
+            if (startsWith('/', '/')) {
+                skipSingleLineComment();
+                continue;
             }
 
-            // 3. error
+            if (startsWith('/', '*')) {
+                skipMultiLineComment();
+                continue;
+            }
+
+            if (isIdentifierStart(value)) {
+                return readIdentifier();
+            }
+
+            if (isAsciiDigit(value)) {
+                return readIntegerLiteral();
+            }
+
+            if (value == '"') {
+                return readStringLiteral();
+            }
+
+            Token symbolToken = readSymbolOrOperator();
+            if (symbolToken != null) {
+                return symbolToken;
+            }
+
             throw new LexicalException(
-                    "LINEA " + currentChar.getLine() +
-                            " (COLUMNA " + currentChar.getColumn() +
-                            ") | CARACTER INVALIDO: " + c
+                    "Caracter invalido '" + value + "' en linea " + currentChar.getLine() + ", columna " + currentChar.getCol()
             );
         }
 
         return new Token(TokenType.EOF, "", 0, 0);
     }
 
-    private Token identifier() {
-        int startRow = currentChar.getLine();
-        int startColumn = currentChar.getColumn();
+    private void advance() {
+        currentChar = nextChar;
+        nextChar = reader.nextChar();
+    }
+
+    private Token readIdentifier() {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
         StringBuilder lexeme = new StringBuilder();
 
-        while (currentChar != null) {
-            char value = currentChar.value();
-            if (!Character.isLetterOrDigit(value) && value != '_') {
-                break;
-            }
-            lexeme.append(value);
+        while (currentChar != null && isIdentifierPart(currentChar.getValue())) {
+            lexeme.append(currentChar.getValue());
             advance();
         }
 
-        String value = lexeme.toString();
-        return new Token(resolveIdentifierType(value), value, startRow, startColumn);
+        String text = lexeme.toString();
+        return new Token(resolveIdentifierType(text), text, line, column);
+    }
+
+    private Token readIntegerLiteral() {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
+        StringBuilder lexeme = new StringBuilder();
+
+        while (currentChar != null && isAsciiDigit(currentChar.getValue())) {
+            lexeme.append(currentChar.getValue());
+            advance();
+        }
+
+        return new Token(TokenType.INT_LIT, lexeme.toString(), line, column);
+    }
+
+    private Token readStringLiteral() {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
+        StringBuilder value = new StringBuilder();
+
+        advance();
+        while (currentChar != null) {
+            char ch = currentChar.getValue();
+
+            if (ch == '"') {
+                advance();
+                return new Token(TokenType.STR_LIT, value.toString(), line, column);
+            }
+
+            if (ch == '\\') {
+                advance();
+                if (currentChar == null) {
+                    throw new LexicalException("Cadena sin cerrar en linea " + line + ", columna " + column);
+                }
+
+                value.append(resolveEscape(currentChar.getValue(), line, column));
+                ensureStringLength(value.length(), line, column);
+                advance();
+                continue;
+            }
+
+            if (ch == '\n' || ch == '\r') {
+                throw new LexicalException("Cadena sin cerrar en linea " + line + ", columna " + column);
+            }
+
+            if (ch == '\0') {
+                throw new LexicalException("Cadena contiene caracter nulo en linea " + line + ", columna " + column);
+            }
+
+            value.append(ch);
+            ensureStringLength(value.length(), line, column);
+            advance();
+        }
+
+        throw new LexicalException("Cadena sin cerrar en linea " + line + ", columna " + column);
+    }
+
+    private char resolveEscape(char value, int line, int column) {
+        return switch (value) {
+            case 'n' -> '\n';
+            case 't' -> '\t';
+            case 'r' -> '\r';
+            case '"' -> '"';
+            case '\'' -> '\'';
+            case '\\' -> '\\';
+            default -> throw new LexicalException(
+                    "Escape invalido \\" + value + " en linea " + line + ", columna " + column
+            );
+        };
+    }
+
+    private void ensureStringLength(int length, int line, int column) {
+        if (length > 1024) {
+            throw new LexicalException("Cadena supera 1024 caracteres en linea " + line + ", columna " + column);
+        }
+    }
+
+    private Token readSymbolOrOperator() {
+        return switch (currentChar.getValue()) {
+            case ':' -> singleCharToken(TokenType.COLON);
+            case ';' -> singleCharToken(TokenType.SEMICOLON);
+            case '.' -> singleCharToken(TokenType.DOT);
+            case ',' -> singleCharToken(TokenType.COMMA);
+            case '(' -> singleCharToken(TokenType.BRACKET_OPEN);
+            case ')' -> singleCharToken(TokenType.BRACKET_CLOSE);
+            case '[' -> singleCharToken(TokenType.SQR_BRACKET_OPEN);
+            case ']' -> singleCharToken(TokenType.SQR_BRACKET_CLOSE);
+            case '{' -> singleCharToken(TokenType.BRACES_OPEN);
+            case '}' -> singleCharToken(TokenType.BRACES_CLOSE);
+            case '=' -> readEqualsOrComparison();
+            case '!' -> readBangOrComparison();
+            case '<', '>' -> readComparison();
+            case '+', '-' -> singleCharToken(TokenType.ADD_OP);
+            case '*', '%' -> singleCharToken(TokenType.MULT_OP);
+            case '/' -> singleCharToken(TokenType.MULT_OP);
+            default -> null;
+        };
+    }
+
+    private Token readEqualsOrComparison() {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
+        if (nextChar != null && nextChar.getValue() == '=') {
+            advance();
+            advance();
+            return new Token(TokenType.COMP_OP, "==", line, column);
+        }
+
+        advance();
+        return new Token(TokenType.EQUAL, "=", line, column);
+    }
+
+    private Token readBangOrComparison() {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
+        if (nextChar != null && nextChar.getValue() == '=') {
+            advance();
+            advance();
+            return new Token(TokenType.COMP_OP, "!=", line, column);
+        }
+
+        advance();
+        return new Token(TokenType.UNARY_OP, "!", line, column);
+    }
+
+    private Token readComparison() {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
+        char value = currentChar.getValue();
+
+        if (nextChar != null && nextChar.getValue() == '=') {
+            String lexeme = value == '<' ? "<=" : ">=";
+            advance();
+            advance();
+            return new Token(TokenType.COMP_OP, lexeme, line, column);
+        }
+
+        String lexeme = String.valueOf(value);
+        advance();
+        return new Token(TokenType.COMP_OP, lexeme, line, column);
+    }
+
+    private Token singleCharToken(TokenType tokenType) {
+        int line = currentChar.getLine();
+        int column = currentChar.getCol();
+        String value = String.valueOf(currentChar.getValue());
+        advance();
+        return new Token(tokenType, value, line, column);
+    }
+
+    private boolean startsWith(char first, char second) {
+        return currentChar != null
+                && nextChar != null
+                && currentChar.getValue() == first
+                && nextChar.getValue() == second;
+    }
+
+    private void skipSingleLineComment() {
+        advance();
+        advance();
+
+        while (currentChar != null && currentChar.getValue() != '\n') {
+            advance();
+        }
+    }
+
+    private void skipMultiLineComment() {
+        int startLine = currentChar.getLine();
+        int startColumn = currentChar.getCol();
+
+        advance();
+        advance();
+
+        while (currentChar != null) {
+            if (startsWith('*', '/')) {
+                advance();
+                advance();
+                return;
+            }
+            advance();
+        }
+
+        throw new LexicalException(
+                "Comentario multilinea sin cerrar iniciado en linea " + startLine + ", columna " + startColumn
+        );
     }
 
     private TokenType resolveIdentifierType(String value) {
         return switch (value) {
             case "class" -> TokenType.CLASS;
             case "impl" -> TokenType.IMPL;
-            case "new" -> TokenType.NEW;
             case "if" -> TokenType.IF;
             case "else" -> TokenType.ELSE;
-            case "st" -> TokenType.ST;
             case "fn" -> TokenType.FN;
             case "ret" -> TokenType.RET;
             case "while" -> TokenType.WHILE;
+            case "new" -> TokenType.NEW;
+            case "st" -> TokenType.ST;
             case "pub" -> TokenType.PUB;
+            case "self" -> TokenType.SELF;
+            case "div" -> TokenType.DIV;
+            case "void" -> TokenType.VOID;
+            case "Array" -> TokenType.ARRAY;
             case "for" -> TokenType.FOR;
             case "in" -> TokenType.IN;
             case "true", "false" -> TokenType.BOOL_LIT;
             case "nil" -> TokenType.NIL_LIT;
-            default -> Character.isUpperCase(value.charAt(0)) ? TokenType.CLASS_ID : TokenType.METHOD_ID;
+            default -> isUpperAsciiLetter(value.charAt(0)) ? TokenType.CLASS_ID : TokenType.METHOD_ID;
         };
+    }
+
+    private boolean isWhitespaceChar(char value) {
+        return value == ' ' || value == '\n' || value == '\r' || value == '\t' || value == (char) 11;
+    }
+
+    private boolean isIdentifierStart(char value) {
+        return isAsciiLetter(value);
+    }
+
+    private boolean isIdentifierPart(char value) {
+        return isAsciiLetter(value) || isAsciiDigit(value) || value == '_';
+    }
+
+    private boolean isAsciiLetter(char value) {
+        return isLowerAsciiLetter(value) || isUpperAsciiLetter(value);
+    }
+
+    private boolean isLowerAsciiLetter(char value) {
+        return value >= 'a' && value <= 'z';
+    }
+
+    private boolean isUpperAsciiLetter(char value) {
+        return value >= 'A' && value <= 'Z';
+    }
+
+    private boolean isAsciiDigit(char value) {
+        return value >= '0' && value <= '9';
     }
 }
