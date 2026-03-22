@@ -2,13 +2,13 @@ package tinys.lexical;
 
 import tinys.exceptions.LexicalException;
 
-public class LexicalAnalyzer {
+public class Lexer {
 
     private final FileReader reader;
     private FileChar currentChar;
     private FileChar nextChar;
 
-    public LexicalAnalyzer(FileReader reader) {
+    public Lexer(FileReader reader) {
         this.reader = reader;
         this.currentChar = reader.nextChar();
         this.nextChar = reader.nextChar();
@@ -271,10 +271,10 @@ public class LexicalAnalyzer {
             case "new" -> TokenType.NEW;
             case "st" -> TokenType.ST;
             case "pub" -> TokenType.PUB;
-            case "self" -> TokenType.SELF; // TODO: check
-            case "div" -> TokenType.DIV; // TODO: check
-            case "void" -> TokenType.VOID; // TODO: check
-            case "Array" -> TokenType.ARRAY; // TODO: check
+            case "self" -> TokenType.SELF;
+            case "div" -> TokenType.DIV;
+            case "void" -> TokenType.VOID;
+            case "Array" -> TokenType.ARRAY;
             case "for" -> TokenType.FOR;
             case "in" -> TokenType.IN;
             case "true", "false" -> TokenType.BOOL_LIT;
@@ -315,3 +315,4 @@ public class LexicalAnalyzer {
         return new LexicalException(currentChar.getLine(), currentChar.getCol(), description);
     }
 }
+

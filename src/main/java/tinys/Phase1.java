@@ -1,7 +1,7 @@
 package tinys;
 
 import tinys.exceptions.LexicalException;
-import tinys.executors.LexicalExecutor;
+import tinys.executors.LexerExec;
 import tinys.lexical.Token;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class Phase1 {
 
         String sourcePath = args[0];
         String outputPath = args.length == 2 ? args[1] : null;
-        LexicalExecutor executor = new LexicalExecutor();
+        LexerExec executor = new LexerExec();
 
         try {
             List<Token> tokens = executor.analyze(sourcePath);

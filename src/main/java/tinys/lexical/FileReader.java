@@ -7,8 +7,8 @@ import java.nio.file.Path;
 public class FileReader {
     private final String file;
     private int index = 0;
-    private int line = 0;
-    private int col = 0;
+    private int line = 1;
+    private int col = 1;
 
     public FileReader(String filePath) throws IOException {
         this.file = Files.readString(Path.of(filePath));
@@ -30,7 +30,7 @@ public class FileReader {
 
         if (ch.value() == '\n') {
             line++;
-            col = 0;
+            col = 1;
         }
 
         return ch;

@@ -1,55 +1,42 @@
-# tinyS - Etapa 1 (Analizador Lexico)
+# tinyS - an OOL compiler
 
-Proyecto de analisis lexico para tinyS con dos modulos diferenciados:
 
-- `tinys.lexical`: analizador lexico y estructuras de token.
-- `tinys.executors`: ejecutador que invoca el analizador y genera la salida.
 
-## Compilacion
+## Etapa 1 (Analizador lexico)
 
-```bash
-mvn clean package
-```
+Proyecto de analisis lexico para tinyS en Java.
 
-El artefacto generado queda en `target/etapa1.jar`.
+### Estructura
 
-## Ejecucion (formato obligatorio)
+Carpeta principal: `src/main/java/tinys`
+
+- `/Phase1.java`: entrypoint principal (`java -jar etapa1.jar ...`).
+- `/executors/LexicalExecutor.java`: ejecuta el lexer y formatea la salida.
+
+- `/lexical/Lexer.java`: analizador lexico.
+- `/lexical/Token.java` y `/lexical/TokenType.java`: modelo de token.
+- `/exceptions/LexicalException.java`: errores lexicos.
+- `/lexical/FileReader.java` y `/lexical/FileChar.java`: lectura caracter a caracter y posicion de un archivo.
+
+
+### Ejecutar
 
 ```bash
 java -jar target/etapa1.jar <ARCHIVO_FUENTE> [<ARCHIVO_SALIDA>]
 ```
 
-Ejemplos:
+### Tests (JUnit)
+
+Se agregaron tests en:
+
+- `src/test/java/tinys/lexical/LexerTest.java`
+
+Casos base en archivos `.s`:
+
+- `src/test/resources/cases/*.s`
+
+Correr tests:
 
 ```bash
-java -jar target/etapa1.jar testcases/ok_basico.s
-java -jar target/etapa1.jar testcases/ok_basico.s salida.txt
+mvn test
 ```
-
-Si se informa `<ARCHIVO_SALIDA>`, la salida se guarda en ese archivo.
-
-## Formato de salida
-
-### Exito
-
-```text
-CORRECTO: ANALISIS LEXICO
-| TOKEN | LEXEMA | NÚMERO DE LÍNEA (NÚMERO DE COLUMNA) |
-| CLASS | class | LINEA 1 (COLUMNA 1) |
-```
-
-### Error lexico
-
-```text
-ERROR: LEXICO
-| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |
-| LINEA 1 (COLUMNA 1) | IDENTIFICADOR NO VALIDO Hol@ |
-```
-
-La politica frente a error es abortar el analisis lexico.
-
-## Casos de prueba incluidos (`testcases/*.s`)
-
-- `ok_basico.s`: caso exitoso (keywords, identificadores, enteros y comentarios).
-- `error_cadena_sin_cerrar.s`: caso con cadena no cerrada.
-- `error_comentario_multilinea.s`: caso con comentario multilinea no cerrado.
