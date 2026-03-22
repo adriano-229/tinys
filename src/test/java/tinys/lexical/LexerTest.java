@@ -27,7 +27,7 @@ class LexerTest {
         assertEquals("class", tokens.get(0).value());
         assertEquals(TokenType.CLASS_ID, tokens.get(1).type());
         assertEquals("Persona", tokens.get(1).value());
-        assertEquals(TokenType.EOF, tokens.get(tokens.size() - 1).type());
+        assertEquals(TokenType.EOF, tokens.getLast().type());
     }
 
     @Test
@@ -78,8 +78,8 @@ class LexerTest {
         List<Token> tokens = lexInline("\"linea\\ncon\\tescape\\\\ok\"");
 
         assertEquals(2, tokens.size());
-        assertEquals(TokenType.STR_LIT, tokens.get(0).type());
-        assertTrue(tokens.get(0).value().contains("linea\ncon\tescape\\ok"));
+        assertEquals(TokenType.STR_LIT, tokens.getFirst().type());
+        assertTrue(tokens.getFirst().value().contains("linea\ncon\tescape\\ok"));
     }
 
     @Test
