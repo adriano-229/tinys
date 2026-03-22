@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FileReader {
-    private String file;
+    private final String file;
     private int index = 0;
-    private int row = 0;
+    private int line = 0;
     private int col = 0;
 
     public FileReader(String filePath) throws IOException {
@@ -15,17 +15,21 @@ public class FileReader {
     }
 
     public FileChar nextChar() {
+        if (index >= file.length()) {
+            return null;
+        }
+
         FileChar ch = new FileChar(
                 file.charAt(index),
-                col,
-                row
+                line,
+                col
         );
 
         index++;
         col++;
 
-        if (ch.getValue() == '\n') {
-            row++;
+        if (ch.value() == '\n') {
+            line++;
             col = 0;
         }
 

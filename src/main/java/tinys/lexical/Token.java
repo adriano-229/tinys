@@ -1,13 +1,4 @@
 package tinys.lexical;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
-public class Token {
-    private TokenType type;
-    private String value;
-    private int row;
-    private int column;
+public record Token(TokenType type, String value, int line, int column) {
 }

@@ -1,27 +1,20 @@
 package tinys.lexical;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class LexicalMain {
     public static void main(String[] args) throws IOException {
-        FileReader fileReader = new FileReader("/home/gonza/prueba.txt");
+        String inputPath = args.length > 0
+                ? args[0]
+                : "/home/adriano/repos/tinys/src/main/java/tinys/lexical/prueba.txt";
 
+        LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(inputPath));
         while (true) {
-            FileChar ch = fileReader.nextChar();
-            System.out.println(Integer.toHexString(ch.getValue()) + "\tfila:" + ch.getRow() + "\t(" + ch.getCol() + ')');
+            Token token = lexer.nextToken();
+            System.out.printf("%s\t%s\t(%d,%d)%n", token.type(), token.value(), token.line(), token.column());
+            if (token.type() == TokenType.EOF) {
+                break;
+            }
         }
-
-//        String sourceCode = Files.readString(Path.of("input.s"));
-//        LexicalAnalyzer lexer = new LexicalAnalyzer(sourceCode);
-//
-//        while (true) {
-//            Token token = lexer.nextToken();
-//            System.out.println(token.getType());
-//            if (token.getType() == TokenType.EOF) {
-//                break;
-//            }
-//        }
     }
 }

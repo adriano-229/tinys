@@ -1,12 +1,11 @@
 package tinys.lexical;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record FileChar(char value, int line, int col) {
+    public int getLine() {
+        return line;
+    }
 
-@Getter
-@AllArgsConstructor
-public class FileChar {
-    private char value;
-    private int col;
-    private int row;
+    public int getColumn() {
+        return col;
+    }
 }
