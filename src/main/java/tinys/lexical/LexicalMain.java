@@ -6,7 +6,7 @@ public class LexicalMain {
     public static void main(String[] args) throws IOException {
         String inputPath = args.length > 0
                 ? args[0]
-                : "/home/adriano/repos/tinys/src/main/java/tinys/lexical/prueba.txt";
+                : "/home/adriano/repos/tinys/src/main/java/tinys/lexical/test.txt";
 
         LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(inputPath));
         while (true) {

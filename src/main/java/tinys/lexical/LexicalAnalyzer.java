@@ -2,7 +2,7 @@ package tinys.lexical;
 
 import tinys.exceptions.LexicalException;
 
-public class LexicalAnalyzer implements ILexicalAnalyzer {
+public class LexicalAnalyzer {
 
     private final FileReader reader;
     private FileChar currentChar;
@@ -14,7 +14,6 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
         this.nextChar = reader.nextChar();
     }
 
-    @Override
     public Token nextToken() {
         while (currentChar != null) {
             char value = currentChar.getValue();
@@ -51,9 +50,7 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
                 return symbolToken;
             }
 
-            throw new LexicalException(
-                    "Caracter invalido '" + value + "' en linea " + currentChar.getLine() + ", columna " + currentChar.getCol()
-            );
+            throw errorAtCurrent("CARACTER INVALIDO " + value);
         }
 
         return new Token(TokenType.EOF, "", 0, 0);
@@ -105,10 +102,10 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
                 return new Token(TokenType.STR_LIT, value.toString(), line, column);
             }
 
-            if (ch == '\\') {
+            if (ch == '\\') {  // '\\' is a single backslash character, not an escape sequence
                 advance();
                 if (currentChar == null) {
-                    throw new LexicalException("Cadena sin cerrar en linea " + line + ", columna " + column);
+                    throw new LexicalException(line, column, "CADENA SIN CERRAR");
                 }
 
                 value.append(resolveEscape(currentChar.getValue(), line, column));
@@ -118,11 +115,11 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
             }
 
             if (ch == '\n' || ch == '\r') {
-                throw new LexicalException("Cadena sin cerrar en linea " + line + ", columna " + column);
+                throw new LexicalException(line, column, "CADENA SIN CERRAR");
             }
 
             if (ch == '\0') {
-                throw new LexicalException("Cadena contiene caracter nulo en linea " + line + ", columna " + column);
+                throw new LexicalException(line, column, "CADENA CONTIENE CARACTER NULO");
             }
 
             value.append(ch);
@@ -130,7 +127,7 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
             advance();
         }
 
-        throw new LexicalException("Cadena sin cerrar en linea " + line + ", columna " + column);
+        throw new LexicalException(line, column, "CADENA SIN CERRAR");
     }
 
     private char resolveEscape(char value, int line, int column) {
@@ -142,14 +139,16 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
             case '\'' -> '\'';
             case '\\' -> '\\';
             default -> throw new LexicalException(
-                    "Escape invalido \\" + value + " en linea " + line + ", columna " + column
+                    line,
+                    column,
+                    "ESCAPE INVALIDO \\" + value
             );
         };
     }
 
     private void ensureStringLength(int length, int line, int column) {
         if (length > 1024) {
-            throw new LexicalException("Cadena supera 1024 caracteres en linea " + line + ", columna " + column);
+            throw new LexicalException(line, column, "CADENA SUPERA 1024 CARACTERES");
         }
     }
 
@@ -169,8 +168,7 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
             case '!' -> readBangOrComparison();
             case '<', '>' -> readComparison();
             case '+', '-' -> singleCharToken(TokenType.ADD_OP);
-            case '*', '%' -> singleCharToken(TokenType.MULT_OP);
-            case '/' -> singleCharToken(TokenType.MULT_OP);
+            case '*', '%', '/' -> singleCharToken(TokenType.MULT_OP);
             default -> null;
         };
     }
@@ -258,9 +256,7 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
             advance();
         }
 
-        throw new LexicalException(
-                "Comentario multilinea sin cerrar iniciado en linea " + startLine + ", columna " + startColumn
-        );
+        throw new LexicalException(startLine, startColumn, "COMENTARIO MULTILINEA SIN CERRAR");
     }
 
     private TokenType resolveIdentifierType(String value) {
@@ -275,10 +271,10 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
             case "new" -> TokenType.NEW;
             case "st" -> TokenType.ST;
             case "pub" -> TokenType.PUB;
-            case "self" -> TokenType.SELF;
-            case "div" -> TokenType.DIV;
-            case "void" -> TokenType.VOID;
-            case "Array" -> TokenType.ARRAY;
+            case "self" -> TokenType.SELF; // TODO: check
+            case "div" -> TokenType.DIV; // TODO: check
+            case "void" -> TokenType.VOID; // TODO: check
+            case "Array" -> TokenType.ARRAY; // TODO: check
             case "for" -> TokenType.FOR;
             case "in" -> TokenType.IN;
             case "true", "false" -> TokenType.BOOL_LIT;
@@ -313,5 +309,9 @@ public class LexicalAnalyzer implements ILexicalAnalyzer {
 
     private boolean isAsciiDigit(char value) {
         return value >= '0' && value <= '9';
+    }
+
+    private LexicalException errorAtCurrent(String description) {
+        return new LexicalException(currentChar.getLine(), currentChar.getCol(), description);
     }
 }
