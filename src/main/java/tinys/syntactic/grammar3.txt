@@ -1,0 +1,78 @@
+ELIMINATE∗
+
+A ::= AB∗
+=>
+A ::= A | ABRep
+BRep ::= B BRep | B
+
+pasos:
+1) copy regla donde hay *
+2) cambiarle el * por Rep
+2) paste al final y sacarle el B* (cortando el B así lo tenés clipped)
+4) creas la regla BRep ::= B BRep | B
+
+ESTA GRAMÁTICA AHORA ES BNF!!!!!!
+
+Program ::= DefsList Start | Start
+DefsList ::= Class DefsList | Impl DefsList | Class | Impl
+Start ::= start MethodBlock
+Class ::= class idclass Inheritance { AttributeRep } | class idclass { AttributeRep } | class idclass Inheritance { } | class idclass { }
+AttributeRep ::= Attribute AttributeRep | Attribute
+Impl ::= impl idclass { MemberRep } | impl idclass { }
+MemberRep ::= Member MemberRep | Member
+Inheritance ::= : Type
+Member ::= Method | Constructor
+Constructor ::= . FormalArgs MethodBlock
+Attribute ::= Visibility Type VarsDeclList ; | Type VarsDeclList ;
+Method ::= MethodForm fn MethodType idMetAt FormalArgs MethodBlock | fn MethodType idMetAt FormalArgs MethodBlock | MethodForm fn idMetAt FormalArgs MethodBlock | fn idMetAt FormalArgs MethodBlock
+Visibility ::= pub
+MethodForm ::= st
+MethodBlock ::= { LocalVarsDeclRep SentenceRep } | { LocalVarsDeclRep } | { SentenceRep } | { }
+LocalVarsDeclRep ::= LocalVarsDecl LocalVarsDeclRep | LocalVarsDecl
+SentenceRep ::= Sentence SentenceRep | Sentence
+LocalVarsDecl ::= Type VarsDeclList ;
+VarsDeclList ::= idMetAt | idMetAt , VarsDeclList
+FormalArgs ::= ( FormalArgsList ) | ( )
+FormalArgsList ::= FormalArg , FormalArgsList | FormalArg
+FormalArg ::= Type idMetAt
+MethodType ::= Type | void
+Type ::= PrimitiveType | ReferenceType | ArrayType
+PrimitiveType ::= _Str | _Bool | _Int
+ReferenceType ::= idclass
+ArrayType ::= _Array PrimitiveType
+Sentence ::= ; | Assignment ; | SimpleSentence ; | if ( Exp ) Sentence | if ( Exp ) Sentence else Sentence | while ( Exp ) Sentence | for ( PrimitiveType idMetAt in idMetAt ) Sentence | Block | ret Exp ; | ret ;
+Block ::= { SentenceRep } | { }
+SentenceRep ::= Sentence SentenceRep | Sentence
+Assignment ::= SimpleVarAccess = Exp | SimpleSelfAccess = Exp
+SimpleVarAccess ::= id SimpleChainingRep | id [ Exp ] | id
+SimpleSelfAccess ::= self SimpleChainingRep | self
+SimpleChainingRep ::= SimpleChaining SimpleChainingRep | SimpleChaining
+SimpleChaining ::= . id
+SimpleSentence ::= ( Exp )
+Exp ::= OrExp
+OrExp ::= OrExp \\ AndExp | AndExp
+AndExp ::= AndExp && EqExp | EqExp
+EqExp ::= EqExp EqOp CompoundExp | CompoundExp
+CompoundExp ::= AdExp CompoundOp AdExp | AdExp
+AdExp ::= AdExp AddOp MultExp | MultExp
+MultExp ::= MultExp MultOp UnaryExp | UnaryExp
+UnaryExp ::= UnaryOp UnaryExp | Operand
+EqOp ::= == | !=
+CompoundOp ::= < | > | <= | >=
+AddOp ::= + | -
+UnaryOp ::= + | - | ! | ++ |-- | (Int)
+MultOp ::= * | /
+Operand ::= Literal | Primary Chaining | Primary
+Literal ::= nil | true | false | intLiteral | _StrLiteral
+Primary ::= BracketedExp | SelfAccess | VarsAccess | MethodCall | StaticMethodCall | ClassConstructorCall
+BracketedExp ::= ( Exp ) Chaining | ( Exp )
+SelfAccess ::= self Chaining | self
+VarsAccess ::= id Chaining | id [ Exp ] Chaining | id | id [ Exp ]
+MethodCall ::= id CurrentArguments Chaining | id CurrentArguments
+StaticMethodCall ::= idclass . MethodCall Chaining | idclass . MethodCall
+ClassConstructorCall ::= new idclass CurrentArguments Chaining | new PrimitiveType [ Exp ] | new idclass CurrentArguments
+CurrentArguments ::= ( ExpsList ) | ( )
+ExpsList ::= Exp | Exp , ExpsList
+Chaining ::= . ChainedMethodCall | . ChainedVarAccess
+ChainedMethodCall ::= id CurrentArguments Chaining | id CurrentArguments
+ChainedVarAccess ::= id Chaining | id [ Exp ] Chaining | id | id [ Exp ]

@@ -1,0 +1,66 @@
+NOTES:
+	Vt's
+		begin with an ascii lowercase letter or any ascii symbol, e.g.: st void _Int _Array (Int)
+		# is the empty symbol (the epsylon)
+		when a space is encountered, the Vt ends
+	Vn's
+		begin with uppercase, e.g.: Sentence Attribute Type
+		when a space is encountered, the Vn ends
+
+Program ::= DefsList Start
+DefsList ::= Class DefsList | Impl DefsList | #
+Start ::= start MethodBlock
+Class ::= class idclass Inheritance? { Attribute∗ }
+Impl ::= impl idclass { Member∗ }
+Inheritance ::= : Type
+Member ::= Method | Constructor
+Constructor ::= . FormalArgs MethodBlock
+Attribute ::= Visibility? Type VarsDeclList ;
+Method ::= MethodForm? fn MethodType? idMetAt FormalArgs MethodBlock
+Visibility ::= pub
+MethodForm ::= st
+MethodBlock ::= { LocalVarsDecl∗ Sentence∗ }
+LocalVarsDecl ::= Type VarsDeclList ;
+VarsDeclList ::= idMetAt | idMetAt , VarsDeclList
+FormalArgs ::= ( FormalArgsList? )
+FormalArgsList ::= FormalArg , FormalArgsList | FormalArg
+FormalArg ::= Type idMetAt
+MethodType ::= Type | void
+Type ::= PrimitiveType | ReferenceType | ArrayType
+PrimitiveType ::= _Str | _Bool | _Int
+ReferenceType ::= idclass
+ArrayType ::= _Array PrimitiveType
+Sentence ::= ; | Assignment ; | SimpleSentence ; | if ( Exp ) Sentence | if ( Exp ) Sentence else Sentence | while ( Exp ) Sentence | for ( PrimitiveType idMetAt in idMetAt ) Sentence | Block | ret Exp? ;
+Block ::= { Sentence∗ }
+Assignment ::= SimpleVarAccess = Exp | SimpleSelfAccess = Exp
+SimpleVarAccess ::= id SimpleChaining∗ | id [ Exp ]
+SimpleSelfAccess ::= self SimpleChaining∗
+SimpleChaining ::= . id
+SimpleSentence ::= ( Exp )
+Exp ::= OrExp
+OrExp ::= OrExp \\ AndExp | AndExp
+AndExp ::= AndExp && EqExp | EqExp
+EqExp ::= EqExp EqOp CompoundExp | CompoundExp
+CompoundExp ::= AdExp CompoundOp AdExp | AdExp
+AdExp ::= AdExp AddOp MultExp | MultExp
+MultExp ::= MultExp MultOp UnaryExp | UnaryExp
+UnaryExp ::= UnaryOp UnaryExp | Operand
+EqOp ::= == | !=
+CompoundOp ::= < | > | <= | >=
+AddOp ::= + | -
+UnaryOp ::= + | - | ! | ++ |-- | (Int)
+MultOp ::= * | /
+Operand ::= Literal | Primary Chaining?
+Literal ::= nil | true | false | intLiteral | _StrLiteral
+Primary ::= BracketedExp | SelfAccess | VarsAccess | MethodCall | StaticMethodCall | ClassConstructorCall
+BracketedExp ::= ( Exp ) Chaining?
+SelfAccess ::= self Chaining?
+VarsAccess ::= id Chaining? | id [ Exp ] Chaining?
+MethodCall ::= id CurrentArguments Chaining?
+StaticMethodCall ::= idclass . MethodCall Chaining?
+ClassConstructorCall ::= new idclass CurrentArguments Chaining? | new PrimitiveType [ Exp ]
+CurrentArguments ::= ( ExpsList? )
+ExpsList ::= Exp | Exp , ExpsList
+Chaining ::= . ChainedMethodCall | . ChainedVarAccess
+ChainedMethodCall ::= id CurrentArguments Chaining?
+ChainedVarAccess ::= id Chaining? | id [ Exp ] Chaining?

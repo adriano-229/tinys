@@ -1,0 +1,10 @@
+#TODO RESTA limpiarla, o sea
+grammar4: eliminar símbolos improductivos
+grammar5: eliminar símbolos inaccesibles
+grammar6: eliminar producciones lambda (vacías)
+grammar7: eliminar producciones unitarias
+grammar8: eliminar recursión indirecta
+grammar9: eliminar recursión directa
+grammar10: factorizar
+
+Program ::= ...
