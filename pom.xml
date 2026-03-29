@@ -25,7 +25,7 @@
     </dependencies>
 
     <build>
-        <finalName>etapa1</finalName>
+        <finalName>etapa2</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -42,7 +42,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>tinys.Phase1</mainClass>
+                            <mainClass>tinys.Phase2</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

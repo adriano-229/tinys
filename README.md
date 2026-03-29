@@ -1,42 +1,66 @@
-# tinyS - an OOL compiler
+# tinyS
 
+Implementacion en Java del analizador lexico y sintactico de tinyS.
 
-
-## Etapa 1 (Analizador lexico)
-
-Proyecto de analisis lexico para tinyS en Java.
-
-### Estructura
+## Estructura minima
 
 Carpeta principal: `src/main/java/tinys`
 
-- `/Phase1.java`: entrypoint principal (`java -jar etapa1.jar ...`).
-- `/executors/LexicalExecutor.java`: ejecuta el lexical y formatea la salida.
+- `Phase1.java`: runner de etapa 1 (lexico) y modo sintactico opcional.
+- `Phase2.java`: runner oficial de etapa 2.
+- `executors/LexicalExec.java`: ejecuta y formatea salida lexico.
+- `executors/SyntacticExec.java`: ejecuta y formatea salida sintactico.
+- `lexical/Lexical.java`: analizador lexico.
+- `lexical/Token.java` y `lexical/TokenType.java`: modelo de token.
+- `exceptions/LexicalException.java` y `exceptions/SyntacticException.java`: errores.
+- `lexical/FileReader.java` y `lexical/FileChar.java`: lectura caracter a caracter.
 
-- `/lexical/Lexer.java`: analizador lexico.
-- `/lexical/Token.java` y `/lexical/TokenType.java`: modelo de token.
-- `/exceptions/LexicalException.java`: errores lexicos.
-- `/lexical/FileReader.java` y `/lexical/FileChar.java`: lectura caracter a caracter y posicion de un archivo.
-
-
-### Ejecutar
+## Build
 
 ```bash
-java -jar target/etapa1.jar <ARCHIVO_FUENTE> [<ARCHIVO_SALIDA>]
+mvn package
 ```
 
-### Tests (JUnit)
+Genera `target/etapa2.jar`.
 
-Se agregaron tests en:
+## Ejecutar
 
-- `src/test/java/tinys/lexical/LexerTest.java`
+Etapa 2 (formato catedra):
 
-Casos base en archivos `.s`:
+```bash
+java -jar target/etapa2.jar <ARCHIVO_FUENTE>
+```
 
-- `src/test/resources/cases/*.s`
+Etapa 1 (lexico, con salida opcional):
 
-Correr tests:
+```bash
+java -cp target/etapa2.jar tinys.Phase1 <ARCHIVO_FUENTE> [<ARCHIVO_SALIDA>]
+```
+
+Modo sintactico desde `Phase1`:
+
+```bash
+java -cp target/etapa2.jar tinys.Phase1 --syntactic <ARCHIVO_FUENTE> [<ARCHIVO_SALIDA>]
+```
+
+## Formato de salida
+
+- Exito sintactico: `CORRECTO: ANALISIS SINTACTICO`
+- Error lexico:
+  - `ERROR: LEXICO`
+  - `| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |`
+- Error sintactico:
+  - `ERROR: SINTACTICO`
+  - `| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |`
+
+## Tests
 
 ```bash
 mvn test
 ```
+
+Tests principales:
+
+- `src/test/java/tinys/lexical/LexicalTest.java`
+- `src/test/java/tinys/syntactic/SyntacticAnalyzerTest.java`
+
