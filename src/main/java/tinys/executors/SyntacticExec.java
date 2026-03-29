@@ -1,8 +1,8 @@
 package tinys.executors;
 
 import tinys.exceptions.SyntacticException;
-import tinys.lexical.Lexical;
 import tinys.lexical.FileReader;
+import tinys.lexical.Lexical;
 import tinys.syntactic.SyntacticAnalyzer;
 
 import java.io.IOException;

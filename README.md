@@ -47,11 +47,11 @@ java -cp target/etapa2.jar tinys.Phase1 --syntactic <ARCHIVO_FUENTE> [<ARCHIVO_S
 
 - Exito sintactico: `CORRECTO: ANALISIS SINTACTICO`
 - Error lexico:
-  - `ERROR: LEXICO`
-  - `| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |`
+    - `ERROR: LEXICO`
+    - `| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |`
 - Error sintactico:
-  - `ERROR: SINTACTICO`
-  - `| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |`
+    - `ERROR: SINTACTICO`
+    - `| NUMERO DE LINEA (NUMERO DE COLUMNA) | DESCRIPCION: |`
 
 ## Tests
 
