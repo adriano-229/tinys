@@ -276,8 +276,8 @@ class ParserTest {
 
             FileReader reader = new FileReader(tempFile.toString());
             Lexical lexical = new Lexical(reader);
-            Parser analyzer = new Parser(lexical);
-            analyzer.parseProgram();
+            Parser parser = new Parser(lexical);
+            parser.parseProgram();
         } finally {
             java.nio.file.Files.delete(tempFile);
         }

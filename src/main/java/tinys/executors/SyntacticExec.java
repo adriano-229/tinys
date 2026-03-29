@@ -18,9 +18,9 @@ public class SyntacticExec {
     public void analyze(String sourcePath) throws SyntacticException, IOException {
         FileReader reader = new FileReader(sourcePath);
         Lexical lexical = new Lexical(reader);
-        Parser analyzer = new Parser(lexical);
+        Parser parser = new Parser(lexical);
 
-        analyzer.parseProgram();
+        parser.parseProgram();
     }
 
     public List<String> formatSuccessOutput() {
