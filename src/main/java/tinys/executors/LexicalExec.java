@@ -1,7 +1,7 @@
 package tinys.executors;
 
 import tinys.lexical.FileReader;
-import tinys.lexical.Lexer;
+import tinys.lexical.Lexical;
 import tinys.lexical.Token;
 import tinys.lexical.TokenType;
 
@@ -9,14 +9,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LexerExec {
+public class LexicalExec {
 
     public List<Token> analyze(String sourcePath) throws IOException {
-        Lexer lexer = new Lexer(new FileReader(sourcePath));
+        Lexical lexical = new Lexical(new FileReader(sourcePath));
         List<Token> tokens = new ArrayList<>();
 
         while (true) {
-            Token token = lexer.nextToken();
+            Token token = lexical.nextToken();
             tokens.add(token);
             if (token.type() == TokenType.EOF) {
                 break;

@@ -11,7 +11,7 @@ Proyecto de analisis lexico para tinyS en Java.
 Carpeta principal: `src/main/java/tinys`
 
 - `/Phase1.java`: entrypoint principal (`java -jar etapa1.jar ...`).
-- `/executors/LexicalExecutor.java`: ejecuta el lexer y formatea la salida.
+- `/executors/LexicalExecutor.java`: ejecuta el lexical y formatea la salida.
 
 - `/lexical/Lexer.java`: analizador lexico.
 - `/lexical/Token.java` y `/lexical/TokenType.java`: modelo de token.

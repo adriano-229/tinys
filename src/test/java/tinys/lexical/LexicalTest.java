@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LexerTest {
+class LexicalTest {
 
     @TempDir
     Path tempDir;
@@ -156,11 +156,11 @@ class LexerTest {
     }
 
     private List<Token> lexFile(Path file) throws IOException {
-        Lexer lexer = new Lexer(new FileReader(file.toString()));
+        Lexical lexical = new Lexical(new FileReader(file.toString()));
         List<Token> tokens = new ArrayList<>();
 
         while (true) {
-            Token token = lexer.nextToken();
+            Token token = lexical.nextToken();
             tokens.add(token);
             if (token.type() == TokenType.EOF) {
                 break;

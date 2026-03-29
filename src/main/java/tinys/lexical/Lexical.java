@@ -2,13 +2,13 @@ package tinys.lexical;
 
 import tinys.exceptions.LexicalException;
 
-public class Lexer {
+public class Lexical {
 
     private final FileReader reader;
     private FileChar currentChar;
     private FileChar nextChar;
 
-    public Lexer(FileReader reader) {
+    public Lexical(FileReader reader) {
         this.reader = reader;
         this.currentChar = reader.nextChar();
         this.nextChar = reader.nextChar();
