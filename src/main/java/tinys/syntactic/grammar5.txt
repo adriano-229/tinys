@@ -1,0 +1,341 @@
+Program -> DefsList Start
+          |Start 
+
+DefsList -> Class FClass
+           |Impl FImpl 
+
+FClass -> DefsList
+         |ε
+
+FImpl -> DefsList
+        |ε
+
+Start -> start MethodBlock 
+
+Class -> class idclass Fidclass 
+
+Fidclass -> Inheritance FInheritance
+             |o_bra Fo_bra_2 
+
+FInheritance -> o_bra Fo_bra_4 
+
+Fo_bra_4 -> AttributeRep c_bra
+           |c_bra 
+
+Fo_bra_2 -> AttributeRep c_bra
+           |c_bra 
+
+AttributeRep -> Attribute FAttribute 
+
+FAttribute -> AttributeRep
+             |ε
+
+Impl -> impl Fimpl 
+
+Fimpl -> idclass Fidclass_2 
+
+Fidclass_2 -> o_bra Fo_bra_3 
+
+Fo_bra_3 -> MemberRep c_bra
+           |c_bra 
+
+MemberRep -> Member FMember 
+
+FMember -> MemberRep
+          |ε
+
+Inheritance -> colon Type 
+
+Member -> Method
+         |Constructor 
+
+Constructor -> dot FormalArgs MethodBlock 
+
+Attribute -> Visibility Type VarsDeclList semic
+            |Type VarsDeclList semic 
+
+Method -> MethodForm FMethodForm
+         |fn Ffn 
+
+FMethodForm -> fn Ffn_1 
+
+Ffn_1 -> MethodType idMetAt FormalArgs MethodBlock
+        |idMetAt FormalArgs MethodBlock 
+
+Ffn -> MethodType idMetAt FormalArgs MethodBlock
+      |idMetAt FormalArgs MethodBlock 
+
+Visibility -> pub 
+
+MethodForm -> st 
+
+MethodBlock -> o_bra Fo_bra 
+
+Fo_bra -> LocalVarsDeclRep FLocalVarsDeclRep
+         |SentenceRep c_bra
+         |c_bra 
+
+FLocalVarsDeclRep -> SentenceRep c_bra
+                    |c_bra 
+
+LocalVarsDeclRep -> LocalVarsDecl FLocalVarsDecl 
+
+FLocalVarsDecl -> LocalVarsDeclRep
+                 |ε
+
+SentenceRep -> Sentence FSentence 
+
+FSentence -> SentenceRep FSentenceRep
+            |
+            |ε
+
+FSentenceRep ->
+               |ε
+
+LocalVarsDecl -> Type VarsDeclList semic 
+
+VarsDeclList -> idMetAt FidMetAt 
+
+FidMetAt ->
+           |comma VarsDeclList 
+
+FormalArgs -> o_par Fo_par 
+
+Fo_par -> FormalArgsList c_par
+         |c_par 
+
+FormalArgsList -> FormalArg FFormalArg 
+
+FFormalArg -> comma FormalArgsList
+             |ε
+
+FormalArg -> Type idMetAt 
+
+MethodType -> Type
+             |void 
+
+Type -> PrimitiveType
+       |ReferenceType
+       |ArrayType 
+
+PrimitiveType -> _Str
+                |_Bool
+                |_Int 
+
+ReferenceType -> idclass 
+
+ArrayType -> _Array PrimitiveType 
+
+Sentence -> semic
+           |Assignment semic
+           |SimpleSentence semic
+           |if Fif
+           |while o_par Exp c_par Sentence
+           |for o_par PrimitiveType idMetAt in idMetAt c_par Sentence
+           |Block
+           |ret Fret 
+
+Fif -> o_par Fo_par_3 
+
+Fo_par_3 -> Exp FExp_2 
+
+FExp_2 -> c_par Fc_par_1 
+
+Fc_par_1 -> Sentence FSentence_1 
+
+FSentence_1 ->
+              |else Sentence 
+
+Fret -> Exp semic
+       |semic 
+
+Block -> o_bra Fo_bra_1 
+
+Fo_bra_1 -> SentenceRep c_bra
+           |c_bra 
+
+Assignment -> SimpleVarAccess eq Exp
+             |SimpleSelfAccess eq Exp 
+
+SimpleVarAccess -> id Fid 
+
+Fid -> SimpleChainingRep
+      |o_sqr Exp c_sqr
+      |ε
+
+SimpleSelfAccess -> self Fself 
+
+Fself -> SimpleChainingRep
+        |ε
+
+SimpleChainingRep -> SimpleChaining FSimpleChaining 
+
+FSimpleChaining -> SimpleChainingRep
+                  |ε
+
+SimpleChaining -> dot id 
+
+SimpleSentence -> o_par Exp c_par 
+
+Exp -> OrExp 
+
+OrExp -> AndExp OrExp_1 
+
+OrExp_1 -> or AndExp OrExp_1
+          |ε
+
+AndExp -> EqExp AndExp_1 
+
+AndExp_1 -> and EqExp AndExp_1
+           |ε
+
+EqExp -> CompoundExp EqExp_1 
+
+EqExp_1 -> EqOp CompoundExp EqExp_1
+          |ε
+
+CompoundExp -> AdExp FAdExp 
+
+FAdExp -> CompoundOp AdExp
+         |ε
+
+AdExp -> MultExp AdExp_1 
+
+AdExp_1 -> AddOp MultExp AdExp_1
+          |ε
+
+MultExp -> UnaryExp MultExp_1 
+
+MultExp_1 -> MultOp UnaryExp MultExp_1
+            |ε
+
+UnaryExp -> UnaryOp UnaryExp
+           |Operand 
+
+EqOp -> eqeq
+       |noteq 
+
+CompoundOp -> less
+             |great
+             |lesseq
+             |greateq 
+
+AddOp -> plus
+        |minus 
+
+UnaryOp -> plus
+          |minus
+          |not
+          |plusplus
+          |minusminus
+          |o_parIntc_par 
+
+MultOp -> *
+         |/ 
+
+Operand -> Literal
+          |Primary FPrimary 
+
+FPrimary -> Chaining
+           |ε
+
+Literal -> nil
+          |true
+          |false
+          |intLiteral
+          |_StrLiteral 
+
+Primary -> BracketedExp
+          |SelfAccess
+          |VarsAccess
+          |MethodCall
+          |StaticMethodCall
+          |ClassConstructorCall 
+
+BracketedExp -> o_par Fo_par_1 
+
+Fo_par_1 -> Exp FExp_1 
+
+FExp_1 -> c_par Fc_par 
+
+Fc_par -> Chaining
+         |ε
+
+SelfAccess -> self Fself_1 
+
+Fself_1 -> Chaining
+          |ε
+
+VarsAccess -> id Fid_1 
+
+Fid_1 -> Chaining
+        |o_sqr Fo_sqr
+        |ε
+
+Fo_sqr -> Exp FExp_3 
+
+FExp_3 -> c_sqr Fc_sqr 
+
+Fc_sqr -> Chaining
+         |ε
+
+MethodCall -> id Fid_2 
+
+Fid_2 -> CurrentArguments FCurrentArguments 
+
+FCurrentArguments -> Chaining
+                    |ε
+
+StaticMethodCall -> idclass Fidclass 
+
+Fidclass -> dot Fdot_1 
+
+Fdot_1 -> MethodCall FMethodCall 
+
+FMethodCall -> Chaining
+              |ε
+
+ClassConstructorCall -> new Fnew 
+
+Fnew -> idclass Fidclass_3
+       |PrimitiveType o_sqr Exp c_sqr 
+
+Fidclass_3 -> CurrentArguments FCurrentArguments_2 
+
+FCurrentArguments_2 -> Chaining
+                      |ε
+
+CurrentArguments -> o_par Fo_par_2 
+
+Fo_par_2 -> ExpsList c_par
+           |c_par 
+
+ExpsList -> Exp FExp 
+
+FExp ->
+       |comma ExpsList 
+
+Chaining -> dot Fdot 
+
+Fdot -> ChainedMethodCall
+       |ChainedVarAccess 
+
+ChainedMethodCall -> id Fid_3 
+
+Fid_3 -> CurrentArguments FCurrentArguments_1 
+
+FCurrentArguments_1 -> Chaining
+                      |ε
+
+ChainedVarAccess -> id Fid_4 
+
+Fid_4 -> Chaining
+        |o_sqr Fo_sqr_1
+        |ε
+
+Fo_sqr_1 -> Exp FExp_4 
+
+FExp_4 -> c_sqr Fc_sqr_1 
+
+Fc_sqr_1 -> Chaining
+           |ε

@@ -158,8 +158,8 @@ public class Lexer {
             case ';' -> singleCharToken(TokenType.SEMICOLON);
             case '.' -> singleCharToken(TokenType.DOT);
             case ',' -> singleCharToken(TokenType.COMMA);
-            case '(' -> singleCharToken(TokenType.BRACKET_OPEN);
-            case ')' -> singleCharToken(TokenType.BRACKET_CLOSE);
+            case '(' -> singleCharToken(TokenType.PARENTHESIS_OPEN);
+            case ')' -> singleCharToken(TokenType.PARENTHESIS_CLOSE);
             case '[' -> singleCharToken(TokenType.SQR_BRACKET_OPEN);
             case ']' -> singleCharToken(TokenType.SQR_BRACKET_CLOSE);
             case '{' -> singleCharToken(TokenType.BRACES_OPEN);

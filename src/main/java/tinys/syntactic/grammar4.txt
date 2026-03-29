@@ -1,286 +1,278 @@
-#TODO RESTA limpiarla, o sea
-grammar4: eliminar símbolos improductivos
-grammar5: eliminar símbolos inaccesibles
-grammar6: eliminar producciones lambda (vacías)
-grammar7: eliminar producciones unitarias
-grammar8: eliminar recursión indirecta
-grammar9: eliminar recursión directa
-grammar10: factorizar
 
-Program ::=
-DefsList Start |
-Start
+Program ->
+    DefsList Start |
+    Start
 
-DefsList ::=
-Class DefsList |
-Impl DefsList |
-Class |
-Impl
+DefsList ->
+    Class DefsList |
+    Impl DefsList |
+    Class |
+    Impl
 
-Start ::=
-start MethodBlock
+Start ->
+    start MethodBlock
 
-Class ::=
-class idclass Inheritance { AttributeRep } |
-class idclass { AttributeRep } |
-class idclass Inheritance { } |
-class idclass { }
+Class ->
+    class idclass Inheritance { AttributeRep } |
+    class idclass { AttributeRep } |
+    class idclass Inheritance { } |
+    class idclass { }
 
-AttributeRep ::=
-Attribute AttributeRep |
-Attribute
+AttributeRep ->
+    Attribute AttributeRep |
+    Attribute
 
-Impl ::=
-impl idclass { MemberRep } |
-impl idclass { }
+Impl ->
+    impl idclass { MemberRep } |
+    impl idclass { }
 
-MemberRep ::=
-Member MemberRep |
-Member
+MemberRep ->
+    Member MemberRep |
+    Member
 
-Inheritance ::=
-: Type
+Inheritance ->
+    : Type
 
-Member ::=
-Method |
-Constructor
+Member ->
+    Method |
+    Constructor
 
-Constructor ::=
-. FormalArgs MethodBlock
+Constructor ->
+    . FormalArgs MethodBlock
 
-Attribute ::=
-Visibility Type VarsDeclList ; |
-Type VarsDeclList ;
+Attribute ->
+    Visibility Type VarsDeclList ; |
+    Type VarsDeclList ;
 
-Method ::=
-MethodForm fn MethodType idMetAt FormalArgs MethodBlock |
-fn MethodType idMetAt FormalArgs MethodBlock |
-MethodForm fn idMetAt FormalArgs MethodBlock |
-fn idMetAt FormalArgs MethodBlock
+Method ->
+    MethodForm fn MethodType idMetAt FormalArgs MethodBlock |
+    fn MethodType idMetAt FormalArgs MethodBlock |
+    MethodForm fn idMetAt FormalArgs MethodBlock |
+    fn idMetAt FormalArgs MethodBlock
 
-Visibility ::=
-pub
+Visibility ->
+    pub
 
-MethodForm ::=
-st
+MethodForm ->
+    st
 
-MethodBlock ::=
-{ LocalVarsDeclRep SentenceRep } |
-{ LocalVarsDeclRep } |
-{ SentenceRep } |
-{ }
+MethodBlock ->
+    { LocalVarsDeclRep SentenceRep } |
+    { LocalVarsDeclRep } |
+    { SentenceRep } |
+    { }
 
-LocalVarsDeclRep ::=
-LocalVarsDecl LocalVarsDeclRep |
-LocalVarsDecl
+LocalVarsDeclRep ->
+    LocalVarsDecl LocalVarsDeclRep |
+    LocalVarsDecl
 
-SentenceRep ::=
-Sentence SentenceRep |
-Sentence
+SentenceRep ->
+    Sentence SentenceRep |
+    Sentence
 
-LocalVarsDecl ::=
-Type VarsDeclList ;
+LocalVarsDecl ->
+    Type VarsDeclList ;
 
-VarsDeclList ::=
-idMetAt |
-idMetAt , VarsDeclList
+VarsDeclList ->
+    idMetAt |
+    idMetAt , VarsDeclList
 
-FormalArgs ::=
-( FormalArgsList ) |
-( )
+FormalArgs ->
+    ( FormalArgsList ) |
+    ( )
 
-FormalArgsList ::=
-FormalArg , FormalArgsList |
-FormalArg
+FormalArgsList ->
+    FormalArg , FormalArgsList |
+    FormalArg
 
-FormalArg ::=
-Type idMetAt
+FormalArg ->
+    Type idMetAt
 
-MethodType ::=
-Type |
-void
+MethodType ->
+    Type |
+    void
 
-Type ::=
-PrimitiveType |
-ReferenceType |
-ArrayType
+Type ->
+    PrimitiveType |
+    ReferenceType |
+    ArrayType
 
-PrimitiveType ::=
-_Str |
-_Bool |
-_Int
+PrimitiveType ->
+    _Str |
+    _Bool |
+    _Int
 
-ReferenceType ::=
-idclass
+ReferenceType ->
+    idclass
 
-ArrayType ::=
-_Array PrimitiveType
+ArrayType ->
+    _Array PrimitiveType
 
-Sentence ::=
-; |
-Assignment ; |
-SimpleSentence ; |
-if ( Exp ) Sentence |
-if ( Exp ) Sentence else Sentence |
-while ( Exp ) Sentence |
-for ( PrimitiveType idMetAt in idMetAt ) Sentence |
-Block |
-ret Exp ; |
-ret ;
+Sentence ->
+    ; |
+    Assignment ; |
+    SimpleSentence ; |
+    if ( Exp ) Sentence |
+    if ( Exp ) Sentence else Sentence |
+    while ( Exp ) Sentence |
+    for ( PrimitiveType idMetAt in idMetAt ) Sentence |
+    Block |
+    ret Exp ; |
+    ret ;
 
-Block ::=
-{ SentenceRep } |
-{ }
+Block ->
+    { SentenceRep } |
+    { }
 
-SentenceRep ::=
-Sentence SentenceRep |
-Sentence
+SentenceRep ->
+    Sentence SentenceRep |
+    Sentence
 
-Assignment ::=
-SimpleVarAccess = Exp |
-SimpleSelfAccess = Exp
+Assignment ->
+    SimpleVarAccess = Exp |
+    SimpleSelfAccess = Exp
 
-SimpleVarAccess ::=
-id SimpleChainingRep |
-id [ Exp ] |
-id
+SimpleVarAccess ->
+    id SimpleChainingRep |
+    id [ Exp ] |
+    id
 
-SimpleSelfAccess ::=
-self SimpleChainingRep |
-self
+SimpleSelfAccess ->
+    self SimpleChainingRep |
+    self
 
-SimpleChainingRep ::=
-SimpleChaining SimpleChainingRep |
-SimpleChaining
+SimpleChainingRep ->
+    SimpleChaining SimpleChainingRep |
+    SimpleChaining
 
-SimpleChaining ::=
-. id
+SimpleChaining ->
+    . id
 
-SimpleSentence ::=
-( Exp )
+SimpleSentence ->
+    ( Exp )
 
-Exp ::=
-OrExp
+Exp ->
+    OrExp
 
-OrExp ::=
-OrExp \\ AndExp |
-AndExp
+OrExp ->
+    OrExp \\ AndExp |
+    AndExp
 
-AndExp ::=
-AndExp && EqExp |
-EqExp
+AndExp ->
+    AndExp && EqExp |
+    EqExp
 
-EqExp ::=
-EqExp EqOp CompoundExp |
-CompoundExp
+EqExp ->
+    EqExp EqOp CompoundExp |
+    CompoundExp
 
-CompoundExp ::=
-AdExp CompoundOp AdExp |
-AdExp
+CompoundExp ->
+    AdExp CompoundOp AdExp |
+    AdExp
 
-AdExp ::=
-AdExp AddOp MultExp |
-MultExp
+AdExp ->
+    AdExp AddOp MultExp |
+    MultExp
 
-MultExp ::=
-MultExp MultOp UnaryExp |
-UnaryExp
+MultExp ->
+    MultExp MultOp UnaryExp |
+    UnaryExp
 
-UnaryExp ::=
-UnaryOp UnaryExp |
-Operand
+UnaryExp ->
+    UnaryOp UnaryExp |
+    Operand
 
-EqOp ::=
-== |
-!=
+EqOp ->
+    == |
+    !=
 
-CompoundOp ::=
-< |
-> |
-<= |
->=
+CompoundOp ->
+    < |
+    > |
+    <= |
+    >=
 
-AddOp ::=
-+ |
--
+AddOp ->
+    + |
+    -
 
-UnaryOp ::=
-+ |
-- |
-! |
-++ |
--- |
-(Int)
+UnaryOp ->
+    + |
+    - |
+    ! |
+    ++ |-
+    - |
+    (Int)
 
-MultOp ::=
-* |
-/
+MultOp ->
+    * |
+    /
 
-Operand ::=
-Literal |
-Primary Chaining |
-Primary
+Operand ->
+    Literal |
+    Primary Chaining |
+    Primary
 
-Literal ::=
-nil |
-true |
-false |
-intLiteral |
-_StrLiteral
+Literal ->
+    nil |
+    true |
+    false |
+    intLiteral |
+    _StrLiteral
 
-Primary ::=
-BracketedExp |
-SelfAccess |
-VarsAccess |
-MethodCall |
-StaticMethodCall |
-ClassConstructorCall
+Primary ->
+    BracketedExp |
+    SelfAccess |
+    VarsAccess |
+    MethodCall |
+    StaticMethodCall |
+    ClassConstructorCall
 
-BracketedExp ::=
-( Exp ) Chaining |
-( Exp )
+BracketedExp ->
+    ( Exp ) Chaining |
+    ( Exp )
 
-SelfAccess ::=
-self Chaining |
-self
+SelfAccess ->
+    self Chaining |
+    self
 
-VarsAccess ::=
-id Chaining |
-id [ Exp ] Chaining |
-id |
-id [ Exp ]
+VarsAccess ->
+    id Chaining |
+    id [ Exp ] Chaining |
+    id |
+    id [ Exp ]
 
-MethodCall ::=
-id CurrentArguments Chaining |
-id CurrentArguments
+MethodCall ->
+    id CurrentArguments Chaining |
+    id CurrentArguments
 
-StaticMethodCall ::=
-idclass . MethodCall Chaining |
-idclass . MethodCall
+StaticMethodCall ->
+    idclass . MethodCall Chaining |
+    idclass . MethodCall
 
-ClassConstructorCall ::=
-new idclass CurrentArguments Chaining |
-new PrimitiveType [ Exp ] |
-new idclass CurrentArguments
+ClassConstructorCall ->
+    new idclass CurrentArguments Chaining |
+    new PrimitiveType [ Exp ] |
+    new idclass CurrentArguments
 
-CurrentArguments ::=
-( ExpsList ) |
-( )
+CurrentArguments ->
+    ( ExpsList ) |
+    ( )
 
-ExpsList ::=
-Exp |
-Exp , ExpsList
+ExpsList ->
+    Exp |
+    Exp , ExpsList
 
-Chaining ::=
-. ChainedMethodCall |
-. ChainedVarAccess
+Chaining ->
+    . ChainedMethodCall |
+    . ChainedVarAccess
 
-ChainedMethodCall ::=
-id CurrentArguments Chaining |
-id CurrentArguments
+ChainedMethodCall ->
+    id CurrentArguments Chaining |
+    id CurrentArguments
 
-ChainedVarAccess ::=
-id Chaining |
-id [ Exp ] Chaining |
-id |
-id [ Exp ]
+ChainedVarAccess ->
+    id Chaining |
+    id [ Exp ] Chaining |
+    id |
+    id [ Exp ]
