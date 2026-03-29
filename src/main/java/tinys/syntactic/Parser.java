@@ -1,28 +1,26 @@
 package tinys.syntactic;
 
 import tinys.exceptions.SyntacticException;
-import tinys.lexical.Lexical;
+import tinys.lexical.Lexer;
 import tinys.lexical.Token;
 import tinys.lexical.TokenType;
 
 public class Parser {
-    private final Lexical lexical;
+    private final Lexer lexer;
     private Token currentToken;
     private Token nextToken;
 
-    public Parser(Lexical lexical) {
-        this.lexical = lexical;
-        this.currentToken = lexical.nextToken();
-        this.nextToken = lexical.nextToken();
+    public Parser(Lexer lexer) {
+        this.lexer = lexer;
+        this.currentToken = lexer.nextToken();
+        this.nextToken = lexer.nextToken();
     }
 
     public void parseProgram() {
         if (isDefinitionStart(currentToken)) {
             parseDefsList();
-            if (isStartKeyword(currentToken)) {
-                parseStart();
-            }
-        } else if (isStartKeyword(currentToken)) {
+            parseStart();
+        } else if (currentToken.type() == TokenType.START) {
             parseStart();
         } else {
             error("SE ESPERABA DEFINICION O START");
@@ -44,10 +42,7 @@ public class Parser {
     }
 
     private void parseStart() {
-        if (!isStartKeyword(currentToken)) {
-            error("SE ESPERABA START");
-        }
-        advance();
+        match(TokenType.START, "start");
         parseMethodBlock();
     }
 
@@ -132,7 +127,7 @@ public class Parser {
     }
 
     private void parseFormalArgs() {
-        match(TokenType.PARENTHESIS_OPEN, "(");
+        match(TokenType.PAR_OPEN, "(");
         if (isTypeStart(currentToken)) {
             parseFormalArg();
             while (currentToken.type() == TokenType.COMMA) {
@@ -140,7 +135,7 @@ public class Parser {
                 parseFormalArg();
             }
         }
-        match(TokenType.PARENTHESIS_CLOSE, ")");
+        match(TokenType.PAR_CLOSE, ")");
     }
 
     private void parseFormalArg() {
@@ -234,7 +229,7 @@ public class Parser {
             return;
         }
 
-        if (currentToken.type() == TokenType.PARENTHESIS_OPEN) {
+        if (currentToken.type() == TokenType.PAR_OPEN) {
             parseSimpleSentence();
             match(TokenType.SEMICOLON, ";");
             return;
@@ -246,9 +241,9 @@ public class Parser {
 
     private void parseIfSentence() {
         match(TokenType.IF, "if");
-        match(TokenType.PARENTHESIS_OPEN, "(");
+        match(TokenType.PAR_OPEN, "(");
         parseExp();
-        match(TokenType.PARENTHESIS_CLOSE, ")");
+        match(TokenType.PAR_CLOSE, ")");
         parseSentence();
 
         if (currentToken.type() == TokenType.ELSE) {
@@ -259,20 +254,20 @@ public class Parser {
 
     private void parseWhileSentence() {
         match(TokenType.WHILE, "while");
-        match(TokenType.PARENTHESIS_OPEN, "(");
+        match(TokenType.PAR_OPEN, "(");
         parseExp();
-        match(TokenType.PARENTHESIS_CLOSE, ")");
+        match(TokenType.PAR_CLOSE, ")");
         parseSentence();
     }
 
     private void parseForSentence() {
         match(TokenType.FOR, "for");
-        match(TokenType.PARENTHESIS_OPEN, "(");
+        match(TokenType.PAR_OPEN, "(");
         parsePrimitiveType();
         match(TokenType.METHOD_ID, "IDMETAT");
         match(TokenType.IN, "in");
         match(TokenType.METHOD_ID, "IDMETAT");
-        match(TokenType.PARENTHESIS_CLOSE, ")");
+        match(TokenType.PAR_CLOSE, ")");
         parseSentence();
     }
 
@@ -323,9 +318,9 @@ public class Parser {
     }
 
     private void parseSimpleSentence() {
-        match(TokenType.PARENTHESIS_OPEN, "(");
+        match(TokenType.PAR_OPEN, "(");
         parseExp();
-        match(TokenType.PARENTHESIS_CLOSE, ")");
+        match(TokenType.PAR_CLOSE, ")");
     }
 
     private void parseExp() {
@@ -400,7 +395,7 @@ public class Parser {
     }
 
     private void parsePrimary() {
-        if (currentToken.type() == TokenType.PARENTHESIS_OPEN) {
+        if (currentToken.type() == TokenType.PAR_OPEN) {
             parseSimpleSentence();
             parseOptionalChaining();
             return;
@@ -433,7 +428,7 @@ public class Parser {
     private void parseIdPrimary() {
         match(TokenType.METHOD_ID, "ID");
 
-        if (currentToken.type() == TokenType.PARENTHESIS_OPEN) {
+        if (currentToken.type() == TokenType.PAR_OPEN) {
             parseCurrentArguments();
         } else if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
             advance();
@@ -471,7 +466,7 @@ public class Parser {
     }
 
     private void parseCurrentArguments() {
-        match(TokenType.PARENTHESIS_OPEN, "(");
+        match(TokenType.PAR_OPEN, "(");
         if (isExpStart(currentToken)) {
             parseExp();
             while (currentToken.type() == TokenType.COMMA) {
@@ -479,7 +474,7 @@ public class Parser {
                 parseExp();
             }
         }
-        match(TokenType.PARENTHESIS_CLOSE, ")");
+        match(TokenType.PAR_CLOSE, ")");
     }
 
     private void parseOptionalChaining() {
@@ -487,7 +482,7 @@ public class Parser {
             advance();
             match(TokenType.METHOD_ID, "ID");
 
-            if (currentToken.type() == TokenType.PARENTHESIS_OPEN) {
+            if (currentToken.type() == TokenType.PAR_OPEN) {
                 parseCurrentArguments();
             } else if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
                 advance();
@@ -509,20 +504,15 @@ public class Parser {
         return token.type() == TokenType.DOT || token.type() == TokenType.ST || token.type() == TokenType.FN;
     }
 
-    private boolean isStartKeyword(Token token) {
-        return token.type() == TokenType.METHOD_ID && "start".equals(token.value());
-    }
 
     private boolean isTypeStart(Token token) {
         return token.type() == TokenType.ARRAY || isPrimitiveType(token) || token.type() == TokenType.CLASS_ID;
     }
 
     private boolean isPrimitiveType(Token token) {
-        if (token.type() != TokenType.CLASS_ID) {
-            return false;
-        }
-        String value = token.value();
-        return "Int".equals(value) || "Bool".equals(value) || "Str".equals(value);
+        return token.type() == TokenType.TYPE_INT
+                || token.type() == TokenType.TYPE_BOOL
+                || token.type() == TokenType.TYPE_STR;
     }
 
     private boolean isSentenceStart(Token token) {
@@ -532,7 +522,7 @@ public class Parser {
                 || token.type() == TokenType.FOR
                 || token.type() == TokenType.BRACES_OPEN
                 || token.type() == TokenType.RET
-                || token.type() == TokenType.PARENTHESIS_OPEN
+                || token.type() == TokenType.PAR_OPEN
                 || token.type() == TokenType.SELF
                 || token.type() == TokenType.METHOD_ID;
     }
@@ -545,7 +535,7 @@ public class Parser {
     }
 
     private boolean isExpStart(Token token) {
-        return token.type() == TokenType.PARENTHESIS_OPEN
+        return token.type() == TokenType.PAR_OPEN
                 || token.type() == TokenType.SELF
                 || token.type() == TokenType.NEW
                 || token.type() == TokenType.CLASS_ID
@@ -589,7 +579,7 @@ public class Parser {
 
     private void advance() {
         currentToken = nextToken;
-        nextToken = lexical.nextToken();
+        nextToken = lexer.nextToken();
     }
 
     private String tokenLabel(Token token) {

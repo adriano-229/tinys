@@ -2,13 +2,13 @@ package tinys.lexical;
 
 import tinys.exceptions.LexicalException;
 
-public class Lexical {
+public class Lexer {
 
     private final FileReader reader;
     private FileChar currentChar;
     private FileChar nextChar;
 
-    public Lexical(FileReader reader) {
+    public Lexer(FileReader reader) {
         this.reader = reader;
         this.currentChar = reader.nextChar();
         this.nextChar = reader.nextChar();
@@ -158,8 +158,8 @@ public class Lexical {
             case ';' -> singleCharToken(TokenType.SEMICOLON);
             case '.' -> singleCharToken(TokenType.DOT);
             case ',' -> singleCharToken(TokenType.COMMA);
-            case '(' -> singleCharToken(TokenType.PARENTHESIS_OPEN);
-            case ')' -> singleCharToken(TokenType.PARENTHESIS_CLOSE);
+            case '(' -> singleCharToken(TokenType.PAR_OPEN);
+            case ')' -> singleCharToken(TokenType.PAR_CLOSE);
             case '[' -> singleCharToken(TokenType.SQR_BRACKET_OPEN);
             case ']' -> singleCharToken(TokenType.SQR_BRACKET_CLOSE);
             case '{' -> singleCharToken(TokenType.BRACES_OPEN);
@@ -233,11 +233,10 @@ public class Lexical {
 
     private void skipSingleLineComment() {
         advance();
-        advance();
 
-        while (currentChar != null && currentChar.getValue() != '\n') {
+        do {
             advance();
-        }
+        } while (currentChar != null && currentChar.getValue() != '\n');
     }
 
     private void skipMultiLineComment() {
@@ -261,8 +260,13 @@ public class Lexical {
 
     private TokenType resolveIdentifierType(String value) {
         return switch (value) {
+            case "Int" -> TokenType.TYPE_INT;
+            case "Bool" -> TokenType.TYPE_BOOL;
+            case "Str" -> TokenType.TYPE_STR;
+            case "Array" -> TokenType.ARRAY;
             case "class" -> TokenType.CLASS;
             case "impl" -> TokenType.IMPL;
+            case "start" -> TokenType.START;
             case "if" -> TokenType.IF;
             case "else" -> TokenType.ELSE;
             case "fn" -> TokenType.FN;
@@ -274,7 +278,6 @@ public class Lexical {
             case "self" -> TokenType.SELF;
             case "div" -> TokenType.DIV;
             case "void" -> TokenType.VOID;
-            case "Array" -> TokenType.ARRAY;
             case "for" -> TokenType.FOR;
             case "in" -> TokenType.IN;
             case "true", "false" -> TokenType.BOOL_LIT;

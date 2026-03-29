@@ -1,341 +1,290 @@
-Program -> DefsList Start
-          |Start 
+Los no terminales que tienen una producción con λ tienen un Opt al final, y estos métodos no se implementan directamente, ya que es suficiente utilizar el flujo que se desprende del if para representar el comportamiento de la producción con λ.
+Es decir, están para facilitar la lectura de la gramática, pero no se implementan como métodos.
+En grammar6.txt se elimina el uso de los no terminales con Opt, y se implementa directamente el comportamiento de la producción con λ utilizando el flujo del if.
 
-DefsList -> Class FClass
-           |Impl FImpl 
+Program ->
+    DefsList Start |
+    Start
 
-FClass -> DefsList
-         |ε
+DefsList ->
+    Def DefsList |
+    Def
 
-FImpl -> DefsList
-        |ε
+Def ->
+    Class |
+    Impl
 
-Start -> start MethodBlock 
+Start -> start MethodBlock
 
-Class -> class idclass Fidclass 
+Class -> class idclass InheritanceOpt { AttributeRepOpt }
 
-Fidclass -> Inheritance FInheritance
-             |o_bra Fo_bra_2 
+InheritanceOpt ->
+    Inheritance |
+    λ
 
-FInheritance -> o_bra Fo_bra_4 
+Inheritance -> : Type
 
-Fo_bra_4 -> AttributeRep c_bra
-           |c_bra 
+AttributeRepOpt ->
+    AttributeRep |
+    λ
 
-Fo_bra_2 -> AttributeRep c_bra
-           |c_bra 
+AttributeRep ->
+    Attribute AttributeRep |
+    Attribute
 
-AttributeRep -> Attribute FAttribute 
+Attribute -> VisibilityOpt Type VarsDeclList ;
 
-FAttribute -> AttributeRep
-             |ε
+VisibilityOpt ->
+    Visibility |
+    λ
 
-Impl -> impl Fimpl 
+Visibility -> pub
 
-Fimpl -> idclass Fidclass_2 
+Impl -> impl idclass { MemberRepOpt }
 
-Fidclass_2 -> o_bra Fo_bra_3 
+MemberRepOpt ->
+    MemberRep |
+    λ
 
-Fo_bra_3 -> MemberRep c_bra
-           |c_bra 
+MemberRep ->
+    Member MemberRep |
+    Member
 
-MemberRep -> Member FMember 
+Member ->
+    Method |
+    Constructor
 
-FMember -> MemberRep
-          |ε
+Constructor -> . FormalArgs MethodBlock
 
-Inheritance -> colon Type 
+Method ->
+    MethodForm fn MethodSignatureAndBody |
+    fn MethodSignatureAndBody
 
-Member -> Method
-         |Constructor 
+MethodForm -> st
 
-Constructor -> dot FormalArgs MethodBlock 
+MethodSignatureAndBody -> MethodTypeOpt idMetAt FormalArgs MethodBlock
 
-Attribute -> Visibility Type VarsDeclList semic
-            |Type VarsDeclList semic 
+MethodTypeOpt ->
+    MethodType |
+    λ
 
-Method -> MethodForm FMethodForm
-         |fn Ffn 
+MethodType ->
+    Type |
+    void
 
-FMethodForm -> fn Ffn_1 
+MethodBlock -> { LocalVarsDeclRepOpt SentenceRepOpt }
 
-Ffn_1 -> MethodType idMetAt FormalArgs MethodBlock
-        |idMetAt FormalArgs MethodBlock 
+LocalVarsDeclRepOpt ->
+    LocalVarsDeclRep |
+    λ
 
-Ffn -> MethodType idMetAt FormalArgs MethodBlock
-      |idMetAt FormalArgs MethodBlock 
+LocalVarsDeclRep ->
+    LocalVarsDecl LocalVarsDeclRep |
+    LocalVarsDecl
 
-Visibility -> pub 
+LocalVarsDecl -> Type VarsDeclList ;
 
-MethodForm -> st 
+VarsDeclList -> idMetAt VarsDeclTail
 
-MethodBlock -> o_bra Fo_bra 
+VarsDeclTail ->
+    , idMetAt VarsDeclTail |
+    λ
 
-Fo_bra -> LocalVarsDeclRep FLocalVarsDeclRep
-         |SentenceRep c_bra
-         |c_bra 
+FormalArgs -> ( FormalArgsListOpt )
 
-FLocalVarsDeclRep -> SentenceRep c_bra
-                    |c_bra 
+FormalArgsListOpt ->
+    FormalArgsList |
+    λ
 
-LocalVarsDeclRep -> LocalVarsDecl FLocalVarsDecl 
+FormalArgsList -> FormalArg FormalArgsTail
 
-FLocalVarsDecl -> LocalVarsDeclRep
-                 |ε
+FormalArgsTail ->
+    , FormalArg FormalArgsTail |
+    λ
 
-SentenceRep -> Sentence FSentence 
+FormalArg -> Type idMetAt
 
-FSentence -> SentenceRep FSentenceRep
-            |
-            |ε
+Type ->
+    PrimitiveType |
+    ReferenceType |
+    ArrayType
 
-FSentenceRep ->
-               |ε
+PrimitiveType ->
+    _Int |
+    _Bool |
+    _Str
 
-LocalVarsDecl -> Type VarsDeclList semic 
+ReferenceType -> idclass
 
-VarsDeclList -> idMetAt FidMetAt 
+ArrayType -> _Array PrimitiveType
 
-FidMetAt ->
-           |comma VarsDeclList 
+SentenceRepOpt ->
+    SentenceRep |
+    λ
 
-FormalArgs -> o_par Fo_par 
+SentenceRep ->
+    Sentence SentenceRep |
+    Sentence
 
-Fo_par -> FormalArgsList c_par
-         |c_par 
+Sentence ->
+    ; |
+    Assignment ; |
+    SimpleSentence ; |
+    if ( Exp ) Sentence ElseOpt |
+    while ( Exp ) Sentence |
+    for ( PrimitiveType idMetAt in idMetAt ) Sentence |
+    Block |
+    ret RetOpt ;
 
-FormalArgsList -> FormalArg FFormalArg 
+ElseOpt ->
+    else Sentence |
+    λ
 
-FFormalArg -> comma FormalArgsList
-             |ε
+RetOpt ->
+    Exp |
+    λ
 
-FormalArg -> Type idMetAt 
+Block -> { SentenceRepOpt }
 
-MethodType -> Type
-             |void 
+Assignment -> Assignable = Exp
 
-Type -> PrimitiveType
-       |ReferenceType
-       |ArrayType 
+Assignable ->
+    self SelfChainOpt |
+    idMetAt AssignableTail
 
-PrimitiveType -> _Str
-                |_Bool
-                |_Int 
+SelfChainOpt ->
+    . idMetAt SelfChainOpt |
+    λ
 
-ReferenceType -> idclass 
+AssignableTail ->
+    . idMetAt AssignableTail |
+    [ Exp ] AssignableTail |
+    λ
 
-ArrayType -> _Array PrimitiveType 
+SimpleSentence -> ( Exp )
 
-Sentence -> semic
-           |Assignment semic
-           |SimpleSentence semic
-           |if Fif
-           |while o_par Exp c_par Sentence
-           |for o_par PrimitiveType idMetAt in idMetAt c_par Sentence
-           |Block
-           |ret Fret 
+Exp -> OrExp
 
-Fif -> o_par Fo_par_3 
+OrExp -> AndExp OrExpTail
 
-Fo_par_3 -> Exp FExp_2 
+OrExpTail ->
+    or AndExp OrExpTail |
+    λ
 
-FExp_2 -> c_par Fc_par_1 
+AndExp -> EqExp AndExpTail
 
-Fc_par_1 -> Sentence FSentence_1 
+AndExpTail ->
+    and EqExp AndExpTail |
+    λ
 
-FSentence_1 ->
-              |else Sentence 
+EqExp -> CompoundExp EqExpTail
 
-Fret -> Exp semic
-       |semic 
+EqExpTail ->
+    EqOp CompoundExp EqExpTail |
+    λ
 
-Block -> o_bra Fo_bra_1 
+EqOp ->
+    == |
+    !=
 
-Fo_bra_1 -> SentenceRep c_bra
-           |c_bra 
+CompoundExp -> AddExp CompoundExpTail
 
-Assignment -> SimpleVarAccess eq Exp
-             |SimpleSelfAccess eq Exp 
+CompoundExpTail ->
+    CompoundOp AddExp CompoundExpTail |
+    λ
 
-SimpleVarAccess -> id Fid 
+CompoundOp ->
+    < |
+    > |
+    <= |
+    >=
 
-Fid -> SimpleChainingRep
-      |o_sqr Exp c_sqr
-      |ε
+AddExp -> MultExp AddExpTail
 
-SimpleSelfAccess -> self Fself 
+AddExpTail ->
+    AddOp MultExp AddExpTail |
+    λ
 
-Fself -> SimpleChainingRep
-        |ε
+AddOp ->
+    + |
+    -
 
-SimpleChainingRep -> SimpleChaining FSimpleChaining 
+MultExp -> UnaryExp MultExpTail
 
-FSimpleChaining -> SimpleChainingRep
-                  |ε
+MultExpTail ->
+    MultOp UnaryExp MultExpTail |
+    λ
 
-SimpleChaining -> dot id 
+MultOp ->
+    * |
+    / |
+    %
 
-SimpleSentence -> o_par Exp c_par 
+UnaryExp ->
+    UnaryOp UnaryExp |
+    Operand
 
-Exp -> OrExp 
+UnaryOp ->
+    + |
+    - |
+    !
 
-OrExp -> AndExp OrExp_1 
+Operand ->
+    Literal |
+    Primary
 
-OrExp_1 -> or AndExp OrExp_1
-          |ε
+Literal ->
+    intLiteral |
+    true |
+    false |
+    _StrLiteral |
+    nil
 
-AndExp -> EqExp AndExp_1 
+Primary ->
+    BracketedExp OptionalChaining |
+    self OptionalChaining |
+    NewExpr |
+    StaticCallOrRef |
+    IdPrimary
 
-AndExp_1 -> and EqExp AndExp_1
-           |ε
+BracketedExp -> ( Exp )
 
-EqExp -> CompoundExp EqExp_1 
+IdPrimary -> idMetAt IdPrimaryTail OptionalChaining
 
-EqExp_1 -> EqOp CompoundExp EqExp_1
-          |ε
+IdPrimaryTail ->
+    CurrentArguments |
+    [ Exp ] |
+    λ
 
-CompoundExp -> AdExp FAdExp 
+StaticCallOrRef -> idclass StaticCallTail OptionalChaining
 
-FAdExp -> CompoundOp AdExp
-         |ε
+StaticCallTail ->
+    . idMetAt CurrentArguments |
+    λ
 
-AdExp -> MultExp AdExp_1 
+NewExpr -> new NewTail
 
-AdExp_1 -> AddOp MultExp AdExp_1
-          |ε
+NewTail ->
+    PrimitiveType [ Exp ] |
+    idclass CurrentArguments OptionalChaining
 
-MultExp -> UnaryExp MultExp_1 
+CurrentArguments -> ( ExpsListOpt )
 
-MultExp_1 -> MultOp UnaryExp MultExp_1
-            |ε
+ExpsListOpt ->
+    ExpsList |
+    λ
 
-UnaryExp -> UnaryOp UnaryExp
-           |Operand 
+ExpsList -> Exp ExpsTail
 
-EqOp -> eqeq
-       |noteq 
+ExpsTail ->
+    , Exp ExpsTail |
+    λ
 
-CompoundOp -> less
-             |great
-             |lesseq
-             |greateq 
+OptionalChaining ->
+    . idMetAt ChainAccess OptionalChaining |
+    λ
 
-AddOp -> plus
-        |minus 
-
-UnaryOp -> plus
-          |minus
-          |not
-          |plusplus
-          |minusminus
-          |o_parIntc_par 
-
-MultOp -> *
-         |/ 
-
-Operand -> Literal
-          |Primary FPrimary 
-
-FPrimary -> Chaining
-           |ε
-
-Literal -> nil
-          |true
-          |false
-          |intLiteral
-          |_StrLiteral 
-
-Primary -> BracketedExp
-          |SelfAccess
-          |VarsAccess
-          |MethodCall
-          |StaticMethodCall
-          |ClassConstructorCall 
-
-BracketedExp -> o_par Fo_par_1 
-
-Fo_par_1 -> Exp FExp_1 
-
-FExp_1 -> c_par Fc_par 
-
-Fc_par -> Chaining
-         |ε
-
-SelfAccess -> self Fself_1 
-
-Fself_1 -> Chaining
-          |ε
-
-VarsAccess -> id Fid_1 
-
-Fid_1 -> Chaining
-        |o_sqr Fo_sqr
-        |ε
-
-Fo_sqr -> Exp FExp_3 
-
-FExp_3 -> c_sqr Fc_sqr 
-
-Fc_sqr -> Chaining
-         |ε
-
-MethodCall -> id Fid_2 
-
-Fid_2 -> CurrentArguments FCurrentArguments 
-
-FCurrentArguments -> Chaining
-                    |ε
-
-StaticMethodCall -> idclass Fidclass 
-
-Fidclass -> dot Fdot_1 
-
-Fdot_1 -> MethodCall FMethodCall 
-
-FMethodCall -> Chaining
-              |ε
-
-ClassConstructorCall -> new Fnew 
-
-Fnew -> idclass Fidclass_3
-       |PrimitiveType o_sqr Exp c_sqr 
-
-Fidclass_3 -> CurrentArguments FCurrentArguments_2 
-
-FCurrentArguments_2 -> Chaining
-                      |ε
-
-CurrentArguments -> o_par Fo_par_2 
-
-Fo_par_2 -> ExpsList c_par
-           |c_par 
-
-ExpsList -> Exp FExp 
-
-FExp ->
-       |comma ExpsList 
-
-Chaining -> dot Fdot 
-
-Fdot -> ChainedMethodCall
-       |ChainedVarAccess 
-
-ChainedMethodCall -> id Fid_3 
-
-Fid_3 -> CurrentArguments FCurrentArguments_1 
-
-FCurrentArguments_1 -> Chaining
-                      |ε
-
-ChainedVarAccess -> id Fid_4 
-
-Fid_4 -> Chaining
-        |o_sqr Fo_sqr_1
-        |ε
-
-Fo_sqr_1 -> Exp FExp_4 
-
-FExp_4 -> c_sqr Fc_sqr_1 
-
-Fc_sqr_1 -> Chaining
-           |ε
+ChainAccess ->
+    CurrentArguments |
+    [ Exp ] |
+    λ

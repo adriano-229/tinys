@@ -2,7 +2,7 @@ package tinys.executors;
 
 import tinys.exceptions.SyntacticException;
 import tinys.lexical.FileReader;
-import tinys.lexical.Lexical;
+import tinys.lexical.Lexer;
 import tinys.syntactic.Parser;
 
 import java.io.IOException;
@@ -17,8 +17,8 @@ public class SyntacticExec {
 
     public void analyze(String sourcePath) throws SyntacticException, IOException {
         FileReader reader = new FileReader(sourcePath);
-        Lexical lexical = new Lexical(reader);
-        Parser parser = new Parser(lexical);
+        Lexer lexer = new Lexer(reader);
+        Parser parser = new Parser(lexer);
 
         parser.parseProgram();
     }

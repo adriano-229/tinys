@@ -6,11 +6,11 @@ Implementacion en Java del analizador lexico y sintactico de tinyS.
 
 Carpeta principal: `src/main/java/tinys`
 
-- `Phase1.java`: runner de etapa 1 (lexico) y modo sintactico opcional.
+- `Phase1.java`: runner de etapa 1 (lexico).
 - `Phase2.java`: runner oficial de etapa 2.
 - `executors/LexicalExec.java`: ejecuta y formatea salida lexico.
 - `executors/SyntacticExec.java`: ejecuta y formatea salida sintactico.
-- `lexical/Lexical.java`: analizador lexico.
+- `lexical/Lexer.java`: analizador lexico.
 - `lexical/Token.java` y `lexical/TokenType.java`: modelo de token.
 - `exceptions/LexicalException.java` y `exceptions/SyntacticException.java`: errores.
 - `lexical/FileReader.java` y `lexical/FileChar.java`: lectura caracter a caracter.
@@ -37,12 +37,6 @@ Etapa 1 (lexico, con salida opcional):
 java -cp target/etapa2.jar tinys.Phase1 <ARCHIVO_FUENTE> [<ARCHIVO_SALIDA>]
 ```
 
-Modo sintactico desde `Phase1`:
-
-```bash
-java -cp target/etapa2.jar tinys.Phase1 --syntactic <ARCHIVO_FUENTE> [<ARCHIVO_SALIDA>]
-```
-
 ## Formato de salida
 
 - Exito sintactico: `CORRECTO: ANALISIS SINTACTICO`
@@ -61,6 +55,6 @@ mvn test
 
 Tests principales:
 
-- `src/test/java/tinys/lexical/LexicalTest.java`
-- `src/test/java/tinys/syntactic/SyntacticAnalyzerTest.java`
+- `src/test/java/tinys/lexical/LexerTest.java`
+- `src/test/java/tinys/syntactic/ParserTest.java`
 

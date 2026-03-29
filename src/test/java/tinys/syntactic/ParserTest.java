@@ -3,7 +3,7 @@ package tinys.syntactic;
 import org.junit.jupiter.api.Test;
 import tinys.exceptions.SyntacticException;
 import tinys.lexical.FileReader;
-import tinys.lexical.Lexical;
+import tinys.lexical.Lexer;
 
 import java.io.IOException;
 
@@ -11,6 +11,24 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
+
+    @Test
+    void testParseStartOnlyProgram() {
+        String code = "start { ret; }";
+        testParsingSuccess(code);
+    }
+
+    @Test
+    void testParseDefinitionsThenStartProgram() {
+        String code = "class Persona { } impl Persona { } start { ; }";
+        testParsingSuccess(code);
+    }
+
+    @Test
+    void testRejectsDefinitionsWithoutStart() {
+        String code = "class Persona { }";
+        assertThrows(SyntacticException.class, () -> parseCodeRaw(code));
+    }
 
     @Test
     void testParseSimpleClassDefinition() {
@@ -270,17 +288,29 @@ class ParserTest {
     }
 
     private void parseCode(String code) throws IOException {
+        String normalizedProgram = normalizeProgram(code);
+        parseCodeRaw(normalizedProgram);
+    }
+
+    private void parseCodeRaw(String code) throws IOException {
         java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("test", ".s");
         try {
             java.nio.file.Files.write(tempFile, code.getBytes());
 
             FileReader reader = new FileReader(tempFile.toString());
-            Lexical lexical = new Lexical(reader);
-            Parser parser = new Parser(lexical);
+            Lexer lexer = new Lexer(reader);
+            Parser parser = new Parser(lexer);
             parser.parseProgram();
         } finally {
             java.nio.file.Files.delete(tempFile);
         }
+    }
+
+    private String normalizeProgram(String code) {
+        if (code.matches("(?s).*\\bstart\\b.*")) {
+            return code;
+        }
+        return code + " start { }";
     }
 }
 

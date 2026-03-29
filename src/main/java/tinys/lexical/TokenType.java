@@ -4,6 +4,11 @@ public enum TokenType {
     CLASS_ID,
     METHOD_ID,
 
+    TYPE_INT,
+    TYPE_BOOL,
+    TYPE_STR,
+    ARRAY,
+
     INT_LIT,
     BOOL_LIT,
     STR_LIT,
@@ -11,6 +16,7 @@ public enum TokenType {
 
     CLASS,
     IMPL,
+    START,
     NEW,
     IF,
     ELSE,
@@ -22,7 +28,6 @@ public enum TokenType {
     SELF,
     DIV,
     VOID,
-    ARRAY,
     FOR,
     IN,
 
@@ -30,8 +35,8 @@ public enum TokenType {
     SEMICOLON,
     DOT,
     COMMA,
-    PARENTHESIS_OPEN,
-    PARENTHESIS_CLOSE,
+    PAR_OPEN,
+    PAR_CLOSE,
     SQR_BRACKET_OPEN,
     SQR_BRACKET_CLOSE,
     BRACES_OPEN,

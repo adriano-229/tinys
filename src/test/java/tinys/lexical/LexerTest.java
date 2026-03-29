@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LexicalTest {
+class LexerTest {
 
     @TempDir
     Path tempDir;
@@ -50,7 +50,7 @@ class LexicalTest {
 
     @Test
     void classifiesKeywordsAndIdentifiers() throws IOException {
-        List<Token> tokens = lexInline("class Persona self var_1 Array div");
+        List<Token> tokens = lexInline("class Persona self var_1 Array div Int Bool Str start");
 
         assertEquals(TokenType.CLASS, tokens.get(0).type());
         assertEquals(TokenType.CLASS_ID, tokens.get(1).type());
@@ -58,6 +58,10 @@ class LexicalTest {
         assertEquals(TokenType.METHOD_ID, tokens.get(3).type());
         assertEquals(TokenType.ARRAY, tokens.get(4).type());
         assertEquals(TokenType.DIV, tokens.get(5).type());
+        assertEquals(TokenType.TYPE_INT, tokens.get(6).type());
+        assertEquals(TokenType.TYPE_BOOL, tokens.get(7).type());
+        assertEquals(TokenType.TYPE_STR, tokens.get(8).type());
+        assertEquals(TokenType.START, tokens.get(9).type());
     }
 
     @Test
@@ -127,8 +131,8 @@ class LexicalTest {
                 TokenType.SEMICOLON,
                 TokenType.DOT,
                 TokenType.COMMA,
-                TokenType.PARENTHESIS_OPEN,
-                TokenType.PARENTHESIS_CLOSE,
+                TokenType.PAR_OPEN,
+                TokenType.PAR_CLOSE,
                 TokenType.SQR_BRACKET_OPEN,
                 TokenType.SQR_BRACKET_CLOSE,
                 TokenType.BRACES_OPEN,
@@ -154,11 +158,11 @@ class LexicalTest {
     }
 
     private List<Token> lexFile(Path file) throws IOException {
-        Lexical lexical = new Lexical(new FileReader(file.toString()));
+        Lexer lexer = new Lexer(new FileReader(file.toString()));
         List<Token> tokens = new ArrayList<>();
 
         while (true) {
-            Token token = lexical.nextToken();
+            Token token = lexer.nextToken();
             tokens.add(token);
             if (token.type() == TokenType.EOF) {
                 break;
