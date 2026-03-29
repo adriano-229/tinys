@@ -5,12 +5,12 @@ import tinys.lexical.Lexical;
 import tinys.lexical.Token;
 import tinys.lexical.TokenType;
 
-public class SyntacticAnalyzer {
+public class Parser {
     private final Lexical lexical;
     private Token currentToken;
     private Token nextToken;
 
-    public SyntacticAnalyzer(Lexical lexical) {
+    public Parser(Lexical lexical) {
         this.lexical = lexical;
         this.currentToken = lexical.nextToken();
         this.nextToken = lexical.nextToken();

@@ -3,7 +3,7 @@ package tinys.executors;
 import tinys.exceptions.SyntacticException;
 import tinys.lexical.FileReader;
 import tinys.lexical.Lexical;
-import tinys.syntactic.SyntacticAnalyzer;
+import tinys.syntactic.Parser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class SyntacticExec {
     public void analyze(String sourcePath) throws SyntacticException, IOException {
         FileReader reader = new FileReader(sourcePath);
         Lexical lexical = new Lexical(reader);
-        SyntacticAnalyzer analyzer = new SyntacticAnalyzer(lexical);
+        Parser analyzer = new Parser(lexical);
 
         analyzer.parseProgram();
     }

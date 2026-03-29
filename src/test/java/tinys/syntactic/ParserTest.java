@@ -10,238 +10,238 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class SyntacticAnalyzerTest {
+class ParserTest {
 
     @Test
-    void testParseSimpleClassDefinition() throws IOException {
+    void testParseSimpleClassDefinition() {
         String code = "class Persona { }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseClassWithInheritance() throws IOException {
+    void testParseClassWithInheritance() {
         String code = "class Persona : Object { }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseMultipleClasses() throws IOException {
+    void testParseMultipleClasses() {
         String code = "class Persona { } class Animal { }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseImplBlock() throws IOException {
+    void testParseImplBlock() {
         String code = "impl Persona { }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseClassWithAttribute() throws IOException {
+    void testParseClassWithAttribute() {
         String code = "class Persona { Int edad; }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseClassWithPublicAttribute() throws IOException {
+    void testParseClassWithPublicAttribute() {
         String code = "class Persona { pub Int edad; }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseClassWithMultipleAttributes() throws IOException {
+    void testParseClassWithMultipleAttributes() {
         String code = "class Persona { Int edad; Str nombre; }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseImplWithMethod() throws IOException {
+    void testParseImplWithMethod() {
         String code = "impl Persona { fn test() { } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseImplWithMethodReturningType() throws IOException {
+    void testParseImplWithMethodReturningType() {
         String code = "impl Persona { fn Str getName() { } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseImplWithStaticMethod() throws IOException {
+    void testParseImplWithStaticMethod() {
         String code = "impl Persona { st fn Int sum() { } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseImplWithConstructor() throws IOException {
+    void testParseImplWithConstructor() {
         String code = "impl Persona { .() { } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseImplWithMethodParameters() throws IOException {
+    void testParseImplWithMethodParameters() {
         String code = "impl Persona { fn Str getName(Str name, Int age) { } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseMethodWithLocalVariables() throws IOException {
+    void testParseMethodWithLocalVariables() {
         String code = "impl Persona { fn test() { Int x; } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseMethodWithMultipleLocalVariables() throws IOException {
+    void testParseMethodWithMultipleLocalVariables() {
         String code = "impl Persona { fn test() { Int x, y; Str name; } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseSimpleExpression() throws IOException {
+    void testParseSimpleExpression() {
         String code = "impl Persona { fn test() { (1); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseAssignment() throws IOException {
+    void testParseAssignment() {
         String code = "impl Persona { fn test() { x = 5; } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseSelfAssignment() throws IOException {
+    void testParseSelfAssignment() {
         String code = "impl Persona { fn test() { self.x = 5; } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseIfStatement() throws IOException {
+    void testParseIfStatement() {
         String code = "impl Persona { fn test() { if (true) { } } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseIfElseStatement() throws IOException {
+    void testParseIfElseStatement() {
         String code = "impl Persona { fn test() { if (true) { } else { } } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseWhileStatement() throws IOException {
+    void testParseWhileStatement() {
         String code = "impl Persona { fn test() { while (true) { } } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseForStatement() throws IOException {
+    void testParseForStatement() {
         String code = "impl Persona { fn test() { for (Int idx in items) { } } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseReturnStatement() throws IOException {
+    void testParseReturnStatement() {
         String code = "impl Persona { fn test() { ret 5; } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseEmptyReturnStatement() throws IOException {
+    void testParseEmptyReturnStatement() {
         String code = "impl Persona { fn test() { ret; } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseLiteralInteger() throws IOException {
+    void testParseLiteralInteger() {
         String code = "impl Persona { fn test() { (42); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseLiteralBoolean() throws IOException {
+    void testParseLiteralBoolean() {
         String code = "impl Persona { fn test() { (true); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseLiteralString() throws IOException {
+    void testParseLiteralString() {
         String code = "impl Persona { fn test() { (\"hello\"); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseLiteralNil() throws IOException {
+    void testParseLiteralNil() {
         String code = "impl Persona { fn test() { (nil); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseUnaryExpression() throws IOException {
+    void testParseUnaryExpression() {
         String code = "impl Persona { fn test() { (-5); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseUnaryNotExpression() throws IOException {
+    void testParseUnaryNotExpression() {
         String code = "impl Persona { fn test() { (!true); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseBinaryAddition() throws IOException {
+    void testParseBinaryAddition() {
         String code = "impl Persona { fn test() { (5 + 3); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseBinarySubtraction() throws IOException {
+    void testParseBinarySubtraction() {
         String code = "impl Persona { fn test() { (5 - 3); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseBinaryMultiplication() throws IOException {
+    void testParseBinaryMultiplication() {
         String code = "impl Persona { fn test() { (5 * 3); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseArrayType() throws IOException {
+    void testParseArrayType() {
         String code = "class Persona { Array Int nums; }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseNewExpression() throws IOException {
+    void testParseNewExpression() {
         String code = "impl Persona { fn test() { (new Persona()); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseNewArrayExpression() throws IOException {
+    void testParseNewArrayExpression() {
         String code = "impl Persona { fn test() { (new Int[10]); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseMethodCallExpression() throws IOException {
+    void testParseMethodCallExpression() {
         String code = "impl Persona { fn test() { (obj.method()); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseArrayAccessExpression() throws IOException {
+    void testParseArrayAccessExpression() {
         String code = "impl Persona { fn test() { (arr[0]); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseSelfAccess() throws IOException {
+    void testParseSelfAccess() {
         String code = "impl Persona { fn test() { (self); } }";
         testParsingSuccess(code);
     }
 
     @Test
-    void testParseSelfDotAccess() throws IOException {
+    void testParseSelfDotAccess() {
         String code = "impl Persona { fn test() { (self.field); } }";
         testParsingSuccess(code);
     }
@@ -259,7 +259,7 @@ class SyntacticAnalyzerTest {
     }
 
     @Test
-    void testParseMultipleSentences() throws IOException {
+    void testParseMultipleSentences() {
         String code = "impl Persona { fn test() { ; ; ; } }";
         testParsingSuccess(code);
     }
@@ -276,7 +276,7 @@ class SyntacticAnalyzerTest {
 
             FileReader reader = new FileReader(tempFile.toString());
             Lexical lexical = new Lexical(reader);
-            SyntacticAnalyzer analyzer = new SyntacticAnalyzer(lexical);
+            Parser analyzer = new Parser(lexical);
             analyzer.parseProgram();
         } finally {
             java.nio.file.Files.delete(tempFile);
