@@ -1,13 +1,10 @@
-Los no terminales que tienen una producción con λ tienen un Opt al final, y estos métodos no se implementan directamente, ya que es suficiente utilizar el flujo que se desprende del if para representar el comportamiento de la producción con λ.
-Es decir, están para facilitar la lectura de la gramática, pero no se implementan como métodos.
-En grammar6.txt se elimina el uso de los no terminales con Opt, y se implementa directamente el comportamiento de la producción con λ utilizando el flujo del if.
-
 Program ->
-    DefsList Start |
+    DefList Start |
     Start
 
-DefsList ->
-    Def DefsList |
+
+DefList ->
+    Def DefList |
     Def
 
 Def ->
@@ -16,7 +13,7 @@ Def ->
 
 Start -> start MethodBlock
 
-Class -> class idclass InheritanceOpt { AttributeRepOpt }
+Class -> class idclass InheritanceOpt { AttributeListOpt }
 
 InheritanceOpt ->
     Inheritance |
@@ -24,12 +21,12 @@ InheritanceOpt ->
 
 Inheritance -> : Type
 
-AttributeRepOpt ->
-    AttributeRep |
+AttributeListOpt ->
+    AttributeList |
     λ
 
-AttributeRep ->
-    Attribute AttributeRep |
+AttributeList ->
+    Attribute AttributeList |
     Attribute
 
 Attribute -> VisibilityOpt Type VarsDeclList ;
@@ -40,14 +37,14 @@ VisibilityOpt ->
 
 Visibility -> pub
 
-Impl -> impl idclass { MemberRepOpt }
+Impl -> impl idclass { MemberListOpt }
 
-MemberRepOpt ->
-    MemberRep |
+MemberListOpt ->
+    MemberList |
     λ
 
-MemberRep ->
-    Member MemberRep |
+MemberList ->
+    Member MemberList |
     Member
 
 Member ->
@@ -72,14 +69,14 @@ MethodType ->
     Type |
     void
 
-MethodBlock -> { LocalVarsDeclRepOpt SentenceRepOpt }
+MethodBlock -> { LocalVarsDeclListOpt SentenceListOpt }
 
-LocalVarsDeclRepOpt ->
-    LocalVarsDeclRep |
+LocalVarsDeclListOpt ->
+    LocalVarsDeclList |
     λ
 
-LocalVarsDeclRep ->
-    LocalVarsDecl LocalVarsDeclRep |
+LocalVarsDeclList ->
+    LocalVarsDecl LocalVarsDeclList |
     LocalVarsDecl
 
 LocalVarsDecl -> Type VarsDeclList ;
@@ -105,9 +102,9 @@ FormalArgsTail ->
 FormalArg -> Type idMetAt
 
 Type ->
+    ArrayType
     PrimitiveType |
     ReferenceType |
-    ArrayType
 
 PrimitiveType ->
     _Int |
@@ -118,12 +115,12 @@ ReferenceType -> idclass
 
 ArrayType -> _Array PrimitiveType
 
-SentenceRepOpt ->
-    SentenceRep |
+SentenceListOpt ->
+    SentenceList |
     λ
 
-SentenceRep ->
-    Sentence SentenceRep |
+SentenceList ->
+    Sentence SentenceList |
     Sentence
 
 Sentence ->
@@ -144,7 +141,7 @@ RetOpt ->
     Exp |
     λ
 
-Block -> { SentenceRepOpt }
+Block -> { SentenceListOpt }
 
 Assignment -> Assignable = Exp
 
