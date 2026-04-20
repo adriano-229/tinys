@@ -1,7 +1,3 @@
-Reescritura prolija: cambio ::= por -> y los | están alineados para facilitar la búsqueda de recursión y factorización.
-Se eliminará la recursión a izquierda y luego se aplicará factorización (ver resultado en grammar5.txt).
-
-
 Program ->
     DefsList Start |
     Start

@@ -8,82 +8,134 @@ import tinys.lexical.TokenType;
 public class Parser {
     private final Lexer lexer;
     private Token currentToken;
-    private Token nextToken;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
         this.currentToken = lexer.nextToken();
-        this.nextToken = lexer.nextToken();
     }
 
     public void parseProgram() {
-        if (isDefinitionStart(currentToken)) {
-            parseDefsList();
+        if (currentToken.type() == TokenType.CLASS || currentToken.type() == TokenType.IMPL) {
+            parseDefList();
             parseStart();
-        } else if (currentToken.type() == TokenType.METHOD_ID) {
-            parseStart();
-        } else {
-            error("SE ESPERABA DEFINICION O START");
+            match(TokenType.EOF, "EOF");
+            return;
         }
 
-        match(TokenType.EOF, "EOF");
+        if (currentToken.type() == TokenType.METHOD_ID) {
+            parseStart();
+            match(TokenType.EOF, "EOF");
+            return;
+        }
+
+        error("SE ESPERABA DEFINICION O START");
     }
 
-    private void parseDefsList() {
-        do {
-            if (currentToken.type() == TokenType.CLASS) {
-                parseClassDef();
-            } else if (currentToken.type() == TokenType.IMPL) {
-                parseImplDef();
-            } else {
-                error("SE ESPERABA CLASS O IMPL");
-            }
-        } while (isDefinitionStart(currentToken));
+    private void parseDefList() {
+        parseDef();
+        if (currentToken.type() == TokenType.CLASS || currentToken.type() == TokenType.IMPL) {
+            parseDefList();
+        }
+    }
+
+    private void parseDef() {
+        if (currentToken.type() == TokenType.CLASS) {
+            parseClassDef();
+            return;
+        }
+
+        if (currentToken.type() == TokenType.IMPL) {
+            parseImplDef();
+            return;
+        }
+
+        error("SE ESPERABA CLASS O IMPL");
     }
 
     private void parseStart() {
-        String methodName = this.currentToken.value();
+        String methodName = currentToken.value();
         match(TokenType.METHOD_ID, "start");
-        if (!methodName.equals("start"))
+        if (!"start".equals(methodName)) {
             error("SE ESPERABA METODO \"start\" PERO SE ENCONTRO " + methodName);
+        }
         parseMethodBlock();
     }
 
     private void parseClassDef() {
         match(TokenType.CLASS, "class");
         match(TokenType.CLASS_ID, "IDCLASS");
+        parseInheritanceOpt();
+        match(TokenType.BRACES_OPEN, "{");
+        parseAttributeListOpt();
+        match(TokenType.BRACES_CLOSE, "}");
+    }
 
+    private void parseInheritanceOpt() {
         if (currentToken.type() == TokenType.COLON) {
-            advance();
+            match(TokenType.COLON, ":");
             parseType();
         }
+    }
 
-        match(TokenType.BRACES_OPEN, "{");
-        while (isAttributeStart(currentToken)) {
-            parseAttribute();
+    private void parseAttributeListOpt() {
+        if (currentToken.type() == TokenType.PUB
+                || currentToken.type() == TokenType.ARRAY
+                || currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR
+                || currentToken.type() == TokenType.CLASS_ID) {
+            parseAttributeList();
         }
-        match(TokenType.BRACES_CLOSE, "}");
+    }
+
+    private void parseAttributeList() {
+        parseAttribute();
+        if (currentToken.type() == TokenType.PUB
+                || currentToken.type() == TokenType.ARRAY
+                || currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR
+                || currentToken.type() == TokenType.CLASS_ID) {
+            parseAttributeList();
+        }
+    }
+
+    private void parseAttribute() {
+        parseVisibilityOpt();
+        parseType();
+        parseVarsDeclList();
+        match(TokenType.SEMICOLON, ";");
+    }
+
+    private void parseVisibilityOpt() {
+        if (currentToken.type() == TokenType.PUB) {
+            match(TokenType.PUB, "pub");
+        }
     }
 
     private void parseImplDef() {
         match(TokenType.IMPL, "impl");
         match(TokenType.CLASS_ID, "IDCLASS");
         match(TokenType.BRACES_OPEN, "{");
-
-        while (isMemberStart(currentToken)) {
-            parseMember();
-        }
-
+        parseMemberListOpt();
         match(TokenType.BRACES_CLOSE, "}");
     }
 
-    private void parseAttribute() {
-        if (currentToken.type() == TokenType.PUB) {
-            advance();
+    private void parseMemberListOpt() {
+        if (currentToken.type() == TokenType.DOT
+                || currentToken.type() == TokenType.ST
+                || currentToken.type() == TokenType.FN) {
+            parseMemberList();
         }
-        parseType();
-        parseVarsDeclList();
-        match(TokenType.SEMICOLON, ";");
+    }
+
+    private void parseMemberList() {
+        parseMember();
+        if (currentToken.type() == TokenType.DOT
+                || currentToken.type() == TokenType.ST
+                || currentToken.type() == TokenType.FN) {
+            parseMemberList();
+        }
     }
 
     private void parseMember() {
@@ -91,7 +143,13 @@ public class Parser {
             parseConstructor();
             return;
         }
-        parseMethod();
+
+        if (currentToken.type() == TokenType.ST || currentToken.type() == TokenType.FN) {
+            parseMethod();
+            return;
+        }
+
+        error("SE ESPERABA MIEMBRO");
     }
 
     private void parseConstructor() {
@@ -102,7 +160,7 @@ public class Parser {
 
     private void parseMethod() {
         if (currentToken.type() == TokenType.ST) {
-            advance();
+            match(TokenType.ST, "st");
             match(TokenType.FN, "fn");
             parseMethodSignatureAndBody();
             return;
@@ -113,51 +171,57 @@ public class Parser {
     }
 
     private void parseMethodSignatureAndBody() {
-        if (currentToken.type() == TokenType.VOID || isTypeStart(currentToken)) {
-            parseMethodType();
-        }
+        parseMethodTypeOpt();
         match(TokenType.METHOD_ID, "IDMETAT");
         parseFormalArgs();
         parseMethodBlock();
     }
 
+    private void parseMethodTypeOpt() {
+        if (currentToken.type() == TokenType.VOID
+                || currentToken.type() == TokenType.ARRAY
+                || currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR
+                || currentToken.type() == TokenType.CLASS_ID) {
+            parseMethodType();
+        }
+    }
+
     private void parseMethodType() {
         if (currentToken.type() == TokenType.VOID) {
-            advance();
+            match(TokenType.VOID, "void");
             return;
         }
         parseType();
     }
 
-    private void parseFormalArgs() {
-        match(TokenType.PAR_OPEN, "(");
-        if (isTypeStart(currentToken)) {
-            parseFormalArg();
-            while (currentToken.type() == TokenType.COMMA) {
-                advance();
-                parseFormalArg();
-            }
-        }
-        match(TokenType.PAR_CLOSE, ")");
-    }
-
-    private void parseFormalArg() {
-        parseType();
-        match(TokenType.METHOD_ID, "IDMETAT");
-    }
-
     private void parseMethodBlock() {
         match(TokenType.BRACES_OPEN, "{");
-
-        while (isLocalVarDeclStart()) {
-            parseLocalVarDecl();
-        }
-
-        while (isSentenceStart(currentToken)) {
-            parseSentence();
-        }
-
+        parseLocalVarsDeclListOpt();
+        parseSentenceListOpt();
         match(TokenType.BRACES_CLOSE, "}");
+    }
+
+    private void parseLocalVarsDeclListOpt() {
+        if (currentToken.type() == TokenType.ARRAY
+                || currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR
+                || currentToken.type() == TokenType.CLASS_ID) {
+            parseLocalVarsDeclList();
+        }
+    }
+
+    private void parseLocalVarsDeclList() {
+        parseLocalVarDecl();
+        if (currentToken.type() == TokenType.ARRAY
+                || currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR
+                || currentToken.type() == TokenType.CLASS_ID) {
+            parseLocalVarsDeclList();
+        }
     }
 
     private void parseLocalVarDecl() {
@@ -168,57 +232,157 @@ public class Parser {
 
     private void parseVarsDeclList() {
         match(TokenType.METHOD_ID, "IDMETAT");
-        while (currentToken.type() == TokenType.COMMA) {
-            advance();
+        parseVarsDeclTail();
+    }
+
+    private void parseVarsDeclTail() {
+        if (currentToken.type() == TokenType.COMMA) {
+            match(TokenType.COMMA, ",");
             match(TokenType.METHOD_ID, "IDMETAT");
+            parseVarsDeclTail();
         }
+    }
+
+    private void parseFormalArgs() {
+        match(TokenType.PAR_OPEN, "(");
+        parseFormalArgsListOpt();
+        match(TokenType.PAR_CLOSE, ")");
+    }
+
+    private void parseFormalArgsListOpt() {
+        if (currentToken.type() == TokenType.ARRAY
+                || currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR
+                || currentToken.type() == TokenType.CLASS_ID) {
+            parseFormalArgsList();
+        }
+    }
+
+    private void parseFormalArgsList() {
+        parseFormalArg();
+        parseFormalArgsTail();
+    }
+
+    private void parseFormalArgsTail() {
+        if (currentToken.type() == TokenType.COMMA) {
+            match(TokenType.COMMA, ",");
+            parseFormalArg();
+            parseFormalArgsTail();
+        }
+    }
+
+    private void parseFormalArg() {
+        parseType();
+        match(TokenType.METHOD_ID, "IDMETAT");
     }
 
     private void parseType() {
         if (currentToken.type() == TokenType.ARRAY) {
-            advance();
-            parsePrimitiveType();
+            parseArrayType();
             return;
         }
 
-        if (isPrimitiveType(currentToken)) {
+        if (currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR) {
             parsePrimitiveType();
             return;
         }
 
         if (currentToken.type() == TokenType.CLASS_ID) {
-            advance();
+            match(TokenType.CLASS_ID, "IDCLASS");
             return;
         }
 
         error("SE ESPERABA TYPE");
     }
 
+    private void parseArrayType() {
+        match(TokenType.ARRAY, "Array");
+        parsePrimitiveType();
+    }
+
     private void parsePrimitiveType() {
-        if (!isPrimitiveType(currentToken)) {
-            error("SE ESPERABA TIPO PRIMITIVO");
+        if (currentToken.type() == TokenType.TYPE_INT) {
+            match(TokenType.TYPE_INT, "Int");
+            return;
         }
-        advance();
+        if (currentToken.type() == TokenType.TYPE_BOOL) {
+            match(TokenType.TYPE_BOOL, "Bool");
+            return;
+        }
+        if (currentToken.type() == TokenType.TYPE_STR) {
+            match(TokenType.TYPE_STR, "Str");
+            return;
+        }
+
+        error("SE ESPERABA TIPO PRIMITIVO");
+    }
+
+    private void parseSentenceListOpt() {
+        if (currentToken.type() == TokenType.SEMICOLON
+                || currentToken.type() == TokenType.SELF
+                || currentToken.type() == TokenType.METHOD_ID
+                || currentToken.type() == TokenType.PAR_OPEN
+                || currentToken.type() == TokenType.IF
+                || currentToken.type() == TokenType.WHILE
+                || currentToken.type() == TokenType.FOR
+                || currentToken.type() == TokenType.BRACES_OPEN
+                || currentToken.type() == TokenType.RET) {
+            parseSentenceList();
+        }
+    }
+
+    private void parseSentenceList() {
+        parseSentence();
+        if (currentToken.type() == TokenType.SEMICOLON
+                || currentToken.type() == TokenType.SELF
+                || currentToken.type() == TokenType.METHOD_ID
+                || currentToken.type() == TokenType.PAR_OPEN
+                || currentToken.type() == TokenType.IF
+                || currentToken.type() == TokenType.WHILE
+                || currentToken.type() == TokenType.FOR
+                || currentToken.type() == TokenType.BRACES_OPEN
+                || currentToken.type() == TokenType.RET) {
+            parseSentenceList();
+        }
     }
 
     private void parseSentence() {
         if (currentToken.type() == TokenType.SEMICOLON) {
-            advance();
+            match(TokenType.SEMICOLON, ";");
             return;
         }
 
         if (currentToken.type() == TokenType.IF) {
-            parseIfSentence();
+            match(TokenType.IF, "if");
+            match(TokenType.PAR_OPEN, "(");
+            parseExp();
+            match(TokenType.PAR_CLOSE, ")");
+            parseSentence();
+            parseElseOpt();
             return;
         }
 
         if (currentToken.type() == TokenType.WHILE) {
-            parseWhileSentence();
+            match(TokenType.WHILE, "while");
+            match(TokenType.PAR_OPEN, "(");
+            parseExp();
+            match(TokenType.PAR_CLOSE, ")");
+            parseSentence();
             return;
         }
 
         if (currentToken.type() == TokenType.FOR) {
-            parseForSentence();
+            match(TokenType.FOR, "for");
+            match(TokenType.PAR_OPEN, "(");
+            parsePrimitiveType();
+            match(TokenType.METHOD_ID, "IDMETAT");
+            match(TokenType.IN, "in");
+            match(TokenType.METHOD_ID, "IDMETAT");
+            match(TokenType.PAR_CLOSE, ")");
+            parseSentence();
             return;
         }
 
@@ -228,7 +392,9 @@ public class Parser {
         }
 
         if (currentToken.type() == TokenType.RET) {
-            parseReturnSentence();
+            match(TokenType.RET, "ret");
+            parseRetOpt();
+            match(TokenType.SEMICOLON, ";");
             return;
         }
 
@@ -238,85 +404,82 @@ public class Parser {
             return;
         }
 
-        parseAssignment();
-        match(TokenType.SEMICOLON, ";");
+        if (currentToken.type() == TokenType.SELF || currentToken.type() == TokenType.METHOD_ID) {
+            parseAssignment();
+            match(TokenType.SEMICOLON, ";");
+            return;
+        }
+
+        error("SE ESPERABA SENTENCIA");
     }
 
-    private void parseIfSentence() {
-        match(TokenType.IF, "if");
-        match(TokenType.PAR_OPEN, "(");
-        parseExp();
-        match(TokenType.PAR_CLOSE, ")");
-        parseSentence();
-
+    private void parseElseOpt() {
         if (currentToken.type() == TokenType.ELSE) {
-            advance();
+            match(TokenType.ELSE, "else");
             parseSentence();
         }
     }
 
-    private void parseWhileSentence() {
-        match(TokenType.WHILE, "while");
-        match(TokenType.PAR_OPEN, "(");
-        parseExp();
-        match(TokenType.PAR_CLOSE, ")");
-        parseSentence();
-    }
-
-    private void parseForSentence() {
-        match(TokenType.FOR, "for");
-        match(TokenType.PAR_OPEN, "(");
-        parsePrimitiveType();
-        match(TokenType.METHOD_ID, "IDMETAT");
-        match(TokenType.IN, "in");
-        match(TokenType.METHOD_ID, "IDMETAT");
-        match(TokenType.PAR_CLOSE, ")");
-        parseSentence();
-    }
-
-    private void parseReturnSentence() {
-        match(TokenType.RET, "ret");
-        if (isExpStart(currentToken)) {
+    private void parseRetOpt() {
+        if (currentToken.type() == TokenType.PAR_OPEN
+                || currentToken.type() == TokenType.SELF
+                || currentToken.type() == TokenType.NEW
+                || currentToken.type() == TokenType.CLASS_ID
+                || currentToken.type() == TokenType.METHOD_ID
+                || currentToken.type() == TokenType.INT_LIT
+                || currentToken.type() == TokenType.BOOL_LIT
+                || currentToken.type() == TokenType.STR_LIT
+                || currentToken.type() == TokenType.NIL_LIT
+                || currentToken.type() == TokenType.ADD_OP
+                || currentToken.type() == TokenType.UNARY_OP) {
             parseExp();
         }
-        match(TokenType.SEMICOLON, ";");
     }
 
     private void parseBlock() {
         match(TokenType.BRACES_OPEN, "{");
-        while (isSentenceStart(currentToken)) {
-            parseSentence();
-        }
+        parseSentenceListOpt();
         match(TokenType.BRACES_CLOSE, "}");
     }
 
     private void parseAssignment() {
-        if (currentToken.type() == TokenType.SELF) {
-            advance();
-            while (currentToken.type() == TokenType.DOT) {
-                advance();
-                match(TokenType.METHOD_ID, "ID");
-            }
-        } else {
-            parseAssignableIdChain();
-        }
-
+        parseAssignable();
         match(TokenType.EQUAL, "=");
         parseExp();
     }
 
-    private void parseAssignableIdChain() {
-        match(TokenType.METHOD_ID, "ID");
+    private void parseAssignable() {
+        if (currentToken.type() == TokenType.SELF) {
+            match(TokenType.SELF, "self");
+            parseSelfChainOpt();
+            return;
+        }
 
-        while (currentToken.type() == TokenType.DOT || currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
-            if (currentToken.type() == TokenType.DOT) {
-                advance();
-                match(TokenType.METHOD_ID, "ID");
-            } else {
-                advance();
-                parseExp();
-                match(TokenType.SQR_BRACKET_CLOSE, "]");
-            }
+        match(TokenType.METHOD_ID, "ID");
+        parseAssignableTail();
+    }
+
+    private void parseSelfChainOpt() {
+        if (currentToken.type() == TokenType.DOT) {
+            match(TokenType.DOT, ".");
+            match(TokenType.METHOD_ID, "ID");
+            parseSelfChainOpt();
+        }
+    }
+
+    private void parseAssignableTail() {
+        if (currentToken.type() == TokenType.DOT) {
+            match(TokenType.DOT, ".");
+            match(TokenType.METHOD_ID, "ID");
+            parseAssignableTail();
+            return;
+        }
+
+        if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
+            match(TokenType.SQR_BRACKET_OPEN, "[");
+            parseExp();
+            match(TokenType.SQR_BRACKET_CLOSE, "]");
+            parseAssignableTail();
         }
     }
 
@@ -332,49 +495,84 @@ public class Parser {
 
     private void parseOrExp() {
         parseAndExp();
-        while (isLogicalKeyword(currentToken, "or")) {
+        parseOrExpTail();
+    }
+
+    private void parseOrExpTail() {
+        if (currentToken.type() == TokenType.METHOD_ID && "or".equals(currentToken.value())) {
             advance();
             parseAndExp();
+            parseOrExpTail();
         }
     }
 
     private void parseAndExp() {
         parseEqExp();
-        while (isLogicalKeyword(currentToken, "and")) {
+        parseAndExpTail();
+    }
+
+    private void parseAndExpTail() {
+        if (currentToken.type() == TokenType.METHOD_ID && "and".equals(currentToken.value())) {
             advance();
             parseEqExp();
+            parseAndExpTail();
         }
     }
 
     private void parseEqExp() {
         parseCompoundExp();
-        while (isEqOperator(currentToken)) {
+        parseEqExpTail();
+    }
+
+    private void parseEqExpTail() {
+        if (currentToken.type() == TokenType.COMP_OP
+                && ("==".equals(currentToken.value()) || "!=".equals(currentToken.value()))) {
             advance();
             parseCompoundExp();
+            parseEqExpTail();
         }
     }
 
     private void parseCompoundExp() {
         parseAddExp();
-        while (isCompoundOperator(currentToken)) {
+        parseCompoundExpTail();
+    }
+
+    private void parseCompoundExpTail() {
+        if (currentToken.type() == TokenType.COMP_OP
+                && ("<".equals(currentToken.value())
+                || ">".equals(currentToken.value())
+                || "<=".equals(currentToken.value())
+                || ">=".equals(currentToken.value()))) {
             advance();
             parseAddExp();
+            parseCompoundExpTail();
         }
     }
 
     private void parseAddExp() {
         parseMultExp();
-        while (currentToken.type() == TokenType.ADD_OP) {
+        parseAddExpTail();
+    }
+
+    private void parseAddExpTail() {
+        if (currentToken.type() == TokenType.ADD_OP) {
             advance();
             parseMultExp();
+            parseAddExpTail();
         }
     }
 
     private void parseMultExp() {
         parseUnaryExp();
-        while (currentToken.type() == TokenType.MULT_OP) {
+        parseMultExpTail();
+    }
+
+    private void parseMultExpTail() {
+        if (currentToken.type() == TokenType.MULT_OP) {
             advance();
             parseUnaryExp();
+            parseMultExpTail();
         }
     }
 
@@ -389,7 +587,10 @@ public class Parser {
     }
 
     private void parseOperand() {
-        if (isLiteral(currentToken)) {
+        if (currentToken.type() == TokenType.INT_LIT
+                || currentToken.type() == TokenType.BOOL_LIT
+                || currentToken.type() == TokenType.STR_LIT
+                || currentToken.type() == TokenType.NIL_LIT) {
             advance();
             return;
         }
@@ -405,7 +606,7 @@ public class Parser {
         }
 
         if (currentToken.type() == TokenType.SELF) {
-            advance();
+            match(TokenType.SELF, "self");
             parseOptionalChaining();
             return;
         }
@@ -430,22 +631,27 @@ public class Parser {
 
     private void parseIdPrimary() {
         match(TokenType.METHOD_ID, "ID");
+        parseIdPrimaryTail();
+        parseOptionalChaining();
+    }
 
+    private void parseIdPrimaryTail() {
         if (currentToken.type() == TokenType.PAR_OPEN) {
             parseCurrentArguments();
-        } else if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
-            advance();
+            return;
+        }
+
+        if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
+            match(TokenType.SQR_BRACKET_OPEN, "[");
             parseExp();
             match(TokenType.SQR_BRACKET_CLOSE, "]");
         }
-
-        parseOptionalChaining();
     }
 
     private void parseStaticCallOrRef() {
         match(TokenType.CLASS_ID, "IDCLASS");
         if (currentToken.type() == TokenType.DOT) {
-            advance();
+            match(TokenType.DOT, ".");
             match(TokenType.METHOD_ID, "ID");
             parseCurrentArguments();
         }
@@ -454,8 +660,13 @@ public class Parser {
 
     private void parseNewExpr() {
         match(TokenType.NEW, "new");
+        parseNewTail();
+    }
 
-        if (isPrimitiveType(currentToken)) {
+    private void parseNewTail() {
+        if (currentToken.type() == TokenType.TYPE_INT
+                || currentToken.type() == TokenType.TYPE_BOOL
+                || currentToken.type() == TokenType.TYPE_STR) {
             parsePrimitiveType();
             match(TokenType.SQR_BRACKET_OPEN, "[");
             parseExp();
@@ -470,108 +681,61 @@ public class Parser {
 
     private void parseCurrentArguments() {
         match(TokenType.PAR_OPEN, "(");
-        if (isExpStart(currentToken)) {
-            parseExp();
-            while (currentToken.type() == TokenType.COMMA) {
-                advance();
-                parseExp();
-            }
-        }
+        parseExpsListOpt();
         match(TokenType.PAR_CLOSE, ")");
     }
 
+    private void parseExpsListOpt() {
+        if (currentToken.type() == TokenType.PAR_OPEN
+                || currentToken.type() == TokenType.SELF
+                || currentToken.type() == TokenType.NEW
+                || currentToken.type() == TokenType.CLASS_ID
+                || currentToken.type() == TokenType.METHOD_ID
+                || currentToken.type() == TokenType.INT_LIT
+                || currentToken.type() == TokenType.BOOL_LIT
+                || currentToken.type() == TokenType.STR_LIT
+                || currentToken.type() == TokenType.NIL_LIT
+                || currentToken.type() == TokenType.ADD_OP
+                || currentToken.type() == TokenType.UNARY_OP) {
+            parseExpsList();
+        }
+    }
+
+    private void parseExpsList() {
+        parseExp();
+        parseExpsTail();
+    }
+
+    private void parseExpsTail() {
+        if (currentToken.type() == TokenType.COMMA) {
+            match(TokenType.COMMA, ",");
+            parseExp();
+            parseExpsTail();
+        }
+    }
+
     private void parseOptionalChaining() {
-        while (currentToken.type() == TokenType.DOT) {
-            advance();
+        if (currentToken.type() == TokenType.DOT) {
+            match(TokenType.DOT, ".");
             match(TokenType.METHOD_ID, "ID");
-
-            if (currentToken.type() == TokenType.PAR_OPEN) {
-                parseCurrentArguments();
-            } else if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
-                advance();
-                parseExp();
-                match(TokenType.SQR_BRACKET_CLOSE, "]");
-            }
+            parseChainAccess();
+            parseOptionalChaining();
         }
     }
 
-    private boolean isDefinitionStart(Token token) {
-        return token.type() == TokenType.CLASS || token.type() == TokenType.IMPL;
-    }
-
-    private boolean isAttributeStart(Token token) {
-        return token.type() == TokenType.PUB || isTypeStart(token);
-    }
-
-    private boolean isMemberStart(Token token) {
-        return token.type() == TokenType.DOT || token.type() == TokenType.ST || token.type() == TokenType.FN;
-    }
-
-
-    private boolean isTypeStart(Token token) {
-        return token.type() == TokenType.ARRAY || isPrimitiveType(token) || token.type() == TokenType.CLASS_ID;
-    }
-
-    private boolean isPrimitiveType(Token token) {
-        return token.type() == TokenType.TYPE_INT
-                || token.type() == TokenType.TYPE_BOOL
-                || token.type() == TokenType.TYPE_STR;
-    }
-
-    private boolean isSentenceStart(Token token) {
-        return token.type() == TokenType.SEMICOLON
-                || token.type() == TokenType.IF
-                || token.type() == TokenType.WHILE
-                || token.type() == TokenType.FOR
-                || token.type() == TokenType.BRACES_OPEN
-                || token.type() == TokenType.RET
-                || token.type() == TokenType.PAR_OPEN
-                || token.type() == TokenType.SELF
-                || token.type() == TokenType.METHOD_ID;
-    }
-
-    private boolean isLocalVarDeclStart() {
-        if (!isTypeStart(currentToken)) {
-            return false;
+    private void parseChainAccess() {
+        if (currentToken.type() == TokenType.PAR_OPEN) {
+            parseCurrentArguments();
+            return;
         }
-        return nextToken.type() == TokenType.METHOD_ID;
+
+        if (currentToken.type() == TokenType.SQR_BRACKET_OPEN) {
+            match(TokenType.SQR_BRACKET_OPEN, "[");
+            parseExp();
+            match(TokenType.SQR_BRACKET_CLOSE, "]");
+        }
     }
 
-    private boolean isExpStart(Token token) {
-        return token.type() == TokenType.PAR_OPEN
-                || token.type() == TokenType.SELF
-                || token.type() == TokenType.NEW
-                || token.type() == TokenType.CLASS_ID
-                || token.type() == TokenType.METHOD_ID
-                || token.type() == TokenType.INT_LIT
-                || token.type() == TokenType.BOOL_LIT
-                || token.type() == TokenType.STR_LIT
-                || token.type() == TokenType.NIL_LIT
-                || token.type() == TokenType.ADD_OP
-                || token.type() == TokenType.UNARY_OP;
-    }
-
-    private boolean isLiteral(Token token) {
-        return token.type() == TokenType.INT_LIT
-                || token.type() == TokenType.BOOL_LIT
-                || token.type() == TokenType.STR_LIT
-                || token.type() == TokenType.NIL_LIT;
-    }
-
-    private boolean isLogicalKeyword(Token token, String value) {
-        return token.type() == TokenType.METHOD_ID && value.equals(token.value());
-    }
-
-    private boolean isEqOperator(Token token) {
-        return token.type() == TokenType.COMP_OP && ("==".equals(token.value()) || "!=".equals(token.value()));
-    }
-
-    private boolean isCompoundOperator(Token token) {
-        return token.type() == TokenType.COMP_OP && ("<".equals(token.value())
-                || ">".equals(token.value())
-                || "<=".equals(token.value())
-                || ">=".equals(token.value()));
-    }
 
     private void match(TokenType expectedType, String expectedName) {
         if (currentToken.type() != expectedType) {
@@ -581,8 +745,7 @@ public class Parser {
     }
 
     private void advance() {
-        currentToken = nextToken;
-        nextToken = lexer.nextToken();
+        currentToken = lexer.nextToken();
     }
 
     private String tokenLabel(Token token) {
@@ -596,3 +759,4 @@ public class Parser {
         throw new SyntacticException(currentToken.line(), currentToken.column(), message);
     }
 }
+
