@@ -266,7 +266,6 @@ public class Lexer {
             case "Array" -> TokenType.ARRAY;
             case "class" -> TokenType.CLASS;
             case "impl" -> TokenType.IMPL;
-            case "start" -> TokenType.START;
             case "if" -> TokenType.IF;
             case "else" -> TokenType.ELSE;
             case "fn" -> TokenType.FN;

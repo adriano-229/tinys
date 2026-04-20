@@ -61,7 +61,7 @@ class LexerTest {
         assertEquals(TokenType.TYPE_INT, tokens.get(6).type());
         assertEquals(TokenType.TYPE_BOOL, tokens.get(7).type());
         assertEquals(TokenType.TYPE_STR, tokens.get(8).type());
-        assertEquals(TokenType.START, tokens.get(9).type());
+        assertEquals(TokenType.METHOD_ID, tokens.get(9).type());
     }
 
     @Test

@@ -20,7 +20,7 @@ public class Parser {
         if (isDefinitionStart(currentToken)) {
             parseDefsList();
             parseStart();
-        } else if (currentToken.type() == TokenType.START) {
+        } else if (currentToken.type() == TokenType.METHOD_ID) {
             parseStart();
         } else {
             error("SE ESPERABA DEFINICION O START");
@@ -42,7 +42,10 @@ public class Parser {
     }
 
     private void parseStart() {
-        match(TokenType.START, "start");
+        String methodName = this.currentToken.value();
+        match(TokenType.METHOD_ID, "start");
+        if (!methodName.equals("start"))
+            error("SE ESPERABA METODO \"start\" PERO SE ENCONTRO " + methodName);
         parseMethodBlock();
     }
 
