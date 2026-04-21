@@ -53,6 +53,7 @@ public class Lexer {
             throw errorAtCurrent("CARACTER INVALIDO " + value);
         }
 
+        // TODO: Arreglar linea y col
         return new Token(TokenType.EOF, "", 0, 0);
     }
 

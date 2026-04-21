@@ -4,10 +4,19 @@ import tinys.exceptions.SyntacticException;
 import tinys.lexical.Lexer;
 import tinys.lexical.Token;
 import tinys.lexical.TokenType;
+import tinys.semantic.refs.ArrayTypeRef;
+import tinys.semantic.refs.ClassTypeRef;
+import tinys.semantic.refs.PrimitiveTypeRef;
+import tinys.semantic.refs.TypeRef;
+import tinys.semantic.st.Start;
+import tinys.semantic.st.SymbolTable;
+
+import java.util.List;
 
 public class Parser {
     private final Lexer lexer;
     private Token currentToken;
+    private final SymbolTable symbolTable = new SymbolTable();
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -53,28 +62,36 @@ public class Parser {
     }
 
     private void parseStart() {
-        String methodName = currentToken.value();
-        match(TokenType.METHOD_ID, "start");
-        if (!"start".equals(methodName)) {
-            error("SE ESPERABA METODO \"start\" PERO SE ENCONTRO " + methodName);
+        Token start = match(TokenType.METHOD_ID, "start");
+        if (!"start".equals(start.value())) {
+            error("SE ESPERABA METODO \"start\" PERO SE ENCONTRO " + start.value());
         }
+
+        symbolTable.setStart(new Start(start.line(), start.col()));
+        symbolTable.setCurrentMethod(symbolTable.getStart());
         parseMethodBlock();
     }
 
     private void parseClassDef() {
         match(TokenType.CLASS, "class");
-        match(TokenType.CLASS_ID, "IDCLASS");
-        parseInheritanceOpt();
+
+        Token classId = match(TokenType.CLASS_ID, "IDCLASS");
+        symbolTable.declareClass(classId.value(), classId.line(), classId.col());
+
+        TypeRef typeRef = parseInheritanceOpt();
+        symbolTable.setCurrentClassParent(typeRef);
         match(TokenType.BRACES_OPEN, "{");
+
         parseAttributeListOpt();
         match(TokenType.BRACES_CLOSE, "}");
     }
 
-    private void parseInheritanceOpt() {
+    private TypeRef parseInheritanceOpt() {
         if (currentToken.type() == TokenType.COLON) {
             match(TokenType.COLON, ":");
-            parseType();
+            return parseType();
         }
+        return null;
     }
 
     private void parseAttributeListOpt() {
@@ -101,16 +118,21 @@ public class Parser {
     }
 
     private void parseAttribute() {
-        parseVisibilityOpt();
-        parseType();
-        parseVarsDeclList();
+        boolean visibility = parseVisibilityOpt();
+        TypeRef typeRef = parseType();
+        List<String> variableNames = parseVarsDeclList();
         match(TokenType.SEMICOLON, ";");
+
+        symbolTable.addAttributesToCurrentClass(visibility, typeRef, variableNames);
     }
 
-    private void parseVisibilityOpt() {
+    // retorna true si es público
+    private boolean parseVisibilityOpt() {
         if (currentToken.type() == TokenType.PUB) {
             match(TokenType.PUB, "pub");
+            return true;
         }
+        return false;
     }
 
     private void parseImplDef() {
@@ -224,23 +246,27 @@ public class Parser {
         }
     }
 
-    private void parseLocalVarDecl() {
-        parseType();
-        parseVarsDeclList();
+    private record LocalVarsDeclList(TypeRef typeRef, List<String> variableNames) {}
+    private LocalVarsDeclList parseLocalVarDecl() {
+        TypeRef typeRef = parseType();
+        List<String> variableNames = parseVarsDeclList();
         match(TokenType.SEMICOLON, ";");
+
+        return new LocalVarsDeclList(typeRef, variableNames);
     }
 
-    private void parseVarsDeclList() {
+    private List<String> parseVarsDeclList() {
         match(TokenType.METHOD_ID, "IDMETAT");
-        parseVarsDeclTail();
+        return parseVarsDeclTail();
     }
 
-    private void parseVarsDeclTail() {
+    private List<String> parseVarsDeclTail() {
         if (currentToken.type() == TokenType.COMMA) {
             match(TokenType.COMMA, ",");
             match(TokenType.METHOD_ID, "IDMETAT");
             parseVarsDeclTail();
         }
+        return List.of();
     }
 
     private void parseFormalArgs() {
@@ -277,47 +303,49 @@ public class Parser {
         match(TokenType.METHOD_ID, "IDMETAT");
     }
 
-    private void parseType() {
+    private TypeRef parseType() {
         if (currentToken.type() == TokenType.ARRAY) {
-            parseArrayType();
-            return;
+            return parseArrayType();
         }
 
         if (currentToken.type() == TokenType.TYPE_INT
                 || currentToken.type() == TokenType.TYPE_BOOL
                 || currentToken.type() == TokenType.TYPE_STR) {
-            parsePrimitiveType();
-            return;
+            return parsePrimitiveType();
         }
 
         if (currentToken.type() == TokenType.CLASS_ID) {
+            String className = currentToken.value();
             match(TokenType.CLASS_ID, "IDCLASS");
-            return;
+            return new ClassTypeRef(className);
         }
 
         error("SE ESPERABA TYPE");
+        return null;
     }
 
-    private void parseArrayType() {
+    private ArrayTypeRef parseArrayType() {
         match(TokenType.ARRAY, "Array");
-        parsePrimitiveType();
+        PrimitiveTypeRef primitiveTypeRef = parsePrimitiveType();
+        return new ArrayTypeRef(primitiveTypeRef);
     }
 
-    private void parsePrimitiveType() {
+    private PrimitiveTypeRef parsePrimitiveType() {
         if (currentToken.type() == TokenType.TYPE_INT) {
             match(TokenType.TYPE_INT, "Int");
-            return;
+            return new PrimitiveTypeRef("Int");
         }
         if (currentToken.type() == TokenType.TYPE_BOOL) {
             match(TokenType.TYPE_BOOL, "Bool");
-            return;
+            return new PrimitiveTypeRef("Bool");
         }
         if (currentToken.type() == TokenType.TYPE_STR) {
             match(TokenType.TYPE_STR, "Str");
-            return;
+            return new PrimitiveTypeRef("Str");
         }
 
         error("SE ESPERABA TIPO PRIMITIVO");
+        return null;
     }
 
     private void parseSentenceListOpt() {
@@ -737,11 +765,13 @@ public class Parser {
     }
 
 
-    private void match(TokenType expectedType, String expectedName) {
+    private Token match(TokenType expectedType, String expectedName) {
         if (currentToken.type() != expectedType) {
             error("SE ESPERABA " + expectedName + " PERO SE ENCONTRO " + tokenLabel(currentToken));
         }
+        Token consumedToken = currentToken;
         advance();
+        return consumedToken;
     }
 
     private void advance() {
@@ -756,7 +786,7 @@ public class Parser {
     }
 
     private void error(String message) {
-        throw new SyntacticException(currentToken.line(), currentToken.column(), message);
+        throw new SyntacticException(currentToken.line(), currentToken.col(), message);
     }
 }
 

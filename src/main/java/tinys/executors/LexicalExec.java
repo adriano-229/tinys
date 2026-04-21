@@ -36,7 +36,7 @@ public class LexicalExec {
                 continue;
             }
             lines.add("| " + token.type() + " | " + token.value() + " | LINEA "
-                    + token.line() + " (COLUMNA " + token.column() + ") |");
+                    + token.line() + " (COLUMNA " + token.col() + ") |");
         }
 
         return lines;

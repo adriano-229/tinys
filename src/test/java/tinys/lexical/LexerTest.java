@@ -146,9 +146,9 @@ class LexerTest {
         List<Token> tokens = lexInline("class A\nret nil");
 
         assertEquals(1, tokens.get(0).line());
-        assertEquals(1, tokens.get(0).column());
+        assertEquals(1, tokens.get(0).col());
         assertEquals(2, tokens.get(2).line());
-        assertEquals(1, tokens.get(2).column());
+        assertEquals(1, tokens.get(2).col());
     }
 
     private List<Token> lexInline(String content) throws IOException {
