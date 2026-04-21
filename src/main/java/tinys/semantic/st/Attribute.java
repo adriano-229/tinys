@@ -12,4 +12,5 @@ public class Attribute {
     private final boolean isPublic;
     private final TypeRef typeRef;
     private Type type;
+    private int pos;
 }

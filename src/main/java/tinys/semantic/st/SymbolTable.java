@@ -84,7 +84,7 @@ public class SymbolTable {
     public void addAttributesToCurrentClass(boolean isPublic, TypeRef typeRef, List<String> attrbNames) {
         for (String attrbName : attrbNames) {
             if (currentClass.getAttributes().containsKey(attrbName))
-                throw new SemanticException(0, 0, "ATRIBUTO YA DEFINIDO");
+                throw new SemanticException(0, 0, "ATRIBUTO YA DEFINIDO"); // todo mejor mensaje de error
 
             Attribute attribute = new Attribute(attrbName, isPublic, typeRef);
             currentClass.getAttributes().put(attrbName, attribute);

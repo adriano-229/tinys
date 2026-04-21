@@ -8,5 +8,5 @@ import lombok.RequiredArgsConstructor;
 public class MethodVariable {
     private final String name;
     private final String type;
-    private final int pos;
+    private final int pos; // todo necesaria?
 }
