@@ -11,6 +11,7 @@ import tinys.semantic.refs.TypeRef;
 import tinys.semantic.st.Start;
 import tinys.semantic.st.SymbolTable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
@@ -256,15 +257,27 @@ public class Parser {
     }
 
     private List<String> parseVarsDeclList() {
-        match(TokenType.METHOD_ID, "IDMETAT");
-        return parseVarsDeclTail();
+        Token variableName = match(TokenType.METHOD_ID, "IDMETAT");
+        List<String> restOfVarNames = parseVarsDeclTail();
+
+        List<String> variableNames = new ArrayList<>();
+        variableNames.add(variableName.value());
+        variableNames.addAll(restOfVarNames);
+
+        return variableNames;
     }
 
     private List<String> parseVarsDeclTail() {
         if (currentToken.type() == TokenType.COMMA) {
             match(TokenType.COMMA, ",");
-            match(TokenType.METHOD_ID, "IDMETAT");
-            parseVarsDeclTail();
+            Token variableName = match(TokenType.METHOD_ID, "IDMETAT");
+            List<String> restOfVarNames = parseVarsDeclTail();
+
+            List<String> variableNames = new ArrayList<>();
+            variableNames.add(variableName.value());
+            variableNames.addAll(restOfVarNames);
+
+            return variableNames;
         }
         return List.of();
     }

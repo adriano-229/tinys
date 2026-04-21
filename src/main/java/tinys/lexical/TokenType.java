@@ -29,7 +29,7 @@ public enum TokenType {
     WHILE,
     PUB,
     SELF,
-    DIV,
+    DIV, // todo wtf?
     VOID,
     FOR,
     IN,
