@@ -19,6 +19,8 @@ public class Parser {
     private Token currentToken;
     private final SymbolTable symbolTable = new SymbolTable();
 
+    // TODO: redo parser methods according to grammar4.txt spec, it shouldn't change very much, though
+
     public Parser(Lexer lexer) {
         this.lexer = lexer;
         this.currentToken = lexer.nextToken();
