@@ -1,287 +1,288 @@
 Program ->
     DefList Start |
     Start
-
+ .
 
 DefList ->
     Def DefList |
-    Def
+    Def  .
 
 Def ->
     Class |
-    Impl
+    Impl  .
 
-Start -> start MethodBlock
+Start ->
+    start MethodBlock .
 
-Class -> class idclass InheritanceOpt { AttributeListOpt }
+Class ->
+    class idclass InheritanceOpt bra_o AttributeListOpt bra_c  .
 
 InheritanceOpt ->
     Inheritance |
-    λ
+      .
 
-Inheritance -> : Type
+Inheritance -> colon Type .
 
 AttributeListOpt ->
     AttributeList |
-    λ
+      .
 
 AttributeList ->
     Attribute AttributeList |
-    Attribute
+    Attribute .
 
-Attribute -> VisibilityOpt Type VarsDeclList ;
+Attribute -> VisibilityOpt Type VarsDeclList semi .
 
 VisibilityOpt ->
     Visibility |
-    λ
+      .
 
-Visibility -> pub
+Visibility -> pub .
 
-Impl -> impl idclass { MemberListOpt }
+Impl -> impl idclass bra_o MemberListOpt bra_c .
 
 MemberListOpt ->
     MemberList |
-    λ
+      .
 
 MemberList ->
     Member MemberList |
-    Member
+    Member .
 
 Member ->
     Method |
-    Constructor
+    Constructor .
 
-Constructor -> . FormalArgs MethodBlock
+Constructor -> dot FormalArgs MethodBlock .
 
 Method ->
     MethodForm fn MethodSignatureAndBody |
-    fn MethodSignatureAndBody
+    fn MethodSignatureAndBody .
 
-MethodForm -> st
+MethodForm -> st .
 
-MethodSignatureAndBody -> MethodTypeOpt idMetAt FormalArgs MethodBlock
+MethodSignatureAndBody -> MethodTypeOpt idMetAt FormalArgs MethodBlock .
 
 MethodTypeOpt ->
     MethodType |
-    λ
+      .
 
 MethodType ->
     Type |
-    void
+    void .
 
-MethodBlock -> { LocalVarsDeclListOpt SentenceListOpt }
+MethodBlock -> bra_o LocalVarsDeclListOpt SentenceListOpt bra_c .
 
 LocalVarsDeclListOpt ->
     LocalVarsDeclList |
-    λ
+      .
 
 LocalVarsDeclList ->
     LocalVarsDecl LocalVarsDeclList |
-    LocalVarsDecl
+    LocalVarsDecl .
 
-LocalVarsDecl -> Type VarsDeclList ;
+LocalVarsDecl -> Type VarsDeclList semi .
 
-VarsDeclList -> idMetAt VarsDeclTail
+VarsDeclList -> idMetAt VarsDeclTail .
 
 VarsDeclTail ->
-    , idMetAt VarsDeclTail |
-    λ
+    comma idMetAt VarsDeclTail |
+      .
 
-FormalArgs -> ( FormalArgsListOpt )
+FormalArgs -> par_o FormalArgsListOpt par_c .
 
 FormalArgsListOpt ->
     FormalArgsList |
-    λ
+      .
 
-FormalArgsList -> FormalArg FormalArgsTail
+FormalArgsList -> FormalArg FormalArgsTail .
 
 FormalArgsTail ->
-    , FormalArg FormalArgsTail |
-    λ
+    comma FormalArg FormalArgsTail |
+      .
 
-FormalArg -> Type idMetAt
+FormalArg -> Type idMetAt .
 
 Type ->
     ArrayType
     PrimitiveType |
-    ReferenceType |
+    ReferenceType | .
 
 PrimitiveType ->
-    _Int |
-    _Bool |
-    _Str
+    int |
+    bool |
+    str .
 
-ReferenceType -> idclass
+ReferenceType -> idclass .
 
-ArrayType -> _Array PrimitiveType
+ArrayType -> array PrimitiveType .
 
 SentenceListOpt ->
     SentenceList |
-    λ
+      .
 
 SentenceList ->
     Sentence SentenceList |
-    Sentence
+    Sentence .
 
 Sentence ->
-    ; |
-    Assignment ; |
-    SimpleSentence ; |
-    if ( Exp ) Sentence ElseOpt |
-    while ( Exp ) Sentence |
-    for ( PrimitiveType idMetAt in idMetAt ) Sentence |
+    semi |
+    Assignment semi |
+    SimpleSentence semi |
+    if par_o Exp par_c Sentence ElseOpt |
+    while par_o Exp par_c Sentence |
+    for par_o PrimitiveType idMetAt in idMetAt par_c Sentence |
     Block |
-    ret RetOpt ;
+    ret RetOpt semi .
 
 ElseOpt ->
     else Sentence |
-    λ
+      .
 
 RetOpt ->
     Exp |
-    λ
+      .
 
-Block -> { SentenceListOpt }
+Block -> bra_o SentenceListOpt bra_c .
 
-Assignment -> Assignable = Exp
+Assignment -> Assignable eq Exp .
 
 Assignable ->
     self SelfChainOpt |
-    idMetAt AssignableTail
+    idMetAt AssignableTail .
 
 SelfChainOpt ->
-    . idMetAt SelfChainOpt |
-    λ
+    dot idMetAt SelfChainOpt |
+      .
 
 AssignableTail ->
-    . idMetAt AssignableTail |
-    [ Exp ] AssignableTail |
-    λ
+    dot idMetAt AssignableTail |
+    sqr_o Exp sqr_c AssignableTail |
+      .
 
-SimpleSentence -> ( Exp )
+SimpleSentence -> par_o Exp par_c .
 
-Exp -> OrExp
+Exp -> OrExp .
 
-OrExp -> AndExp OrExpTail
+OrExp -> AndExp OrExpTail .
 
 OrExpTail ->
     or AndExp OrExpTail |
-    λ
+      .
 
-AndExp -> EqExp AndExpTail
+AndExp -> EqExp AndExpTail .
 
 AndExpTail ->
     and EqExp AndExpTail |
-    λ
+      .
 
-EqExp -> CompoundExp EqExpTail
+EqExp -> CompoundExp EqExpTail .
 
 EqExpTail ->
     EqOp CompoundExp EqExpTail |
-    λ
+      .
 
 EqOp ->
-    == |
-    !=
+    eqeq |
+    ineq .
 
-CompoundExp -> AddExp CompoundExpTail
+CompoundExp -> AddExp CompoundExpTail .
 
 CompoundExpTail ->
     CompoundOp AddExp CompoundExpTail |
-    λ
+      .
 
 CompoundOp ->
-    < |
-    > |
-    <= |
-    >=
+    less |
+    great |
+    lesseq |
+    greateq .
 
-AddExp -> MultExp AddExpTail
+AddExp -> MultExp AddExpTail .
 
 AddExpTail ->
     AddOp MultExp AddExpTail |
-    λ
+      .
 
 AddOp ->
-    + |
-    -
+    plus |
+    minus .
 
-MultExp -> UnaryExp MultExpTail
+MultExp -> UnaryExp MultExpTail .
 
 MultExpTail ->
     MultOp UnaryExp MultExpTail |
-    λ
+      .
 
 MultOp ->
-    * |
-    / |
-    %
+    mult |
+    div |
+    mod .
 
 UnaryExp ->
     UnaryOp UnaryExp |
-    Operand
+    Operand .
 
 UnaryOp ->
-    + |
-    - |
-    !
+    plus |
+    minus |
+    not .
 
 Operand ->
     Literal |
-    Primary
+    Primary .
 
 Literal ->
-    intLiteral |
+    intliteral |
     true |
     false |
-    _StrLiteral |
-    nil
+    strliteral |
+    nil .
 
 Primary ->
     BracketedExp OptionalChaining |
     self OptionalChaining |
     NewExpr |
     StaticCallOrRef |
-    IdPrimary
+    IdPrimary .
 
-BracketedExp -> ( Exp )
+BracketedExp -> par_o Exp par_c .
 
-IdPrimary -> idMetAt IdPrimaryTail OptionalChaining
+IdPrimary -> idMetAt IdPrimaryTail OptionalChaining .
 
 IdPrimaryTail ->
     CurrentArguments |
-    [ Exp ] |
-    λ
+    sqr_o Exp sqr_c |
+      .
 
-StaticCallOrRef -> idclass StaticCallTail OptionalChaining
+StaticCallOrRef -> idclass StaticCallTail OptionalChaining .
 
 StaticCallTail ->
-    . idMetAt CurrentArguments |
-    λ
+    dot idMetAt CurrentArguments |
+      .
 
-NewExpr -> new NewTail
+NewExpr -> new NewTail .
 
 NewTail ->
-    PrimitiveType [ Exp ] |
-    idclass CurrentArguments OptionalChaining
+    PrimitiveType sqr_o Exp sqr_c |
+    idclass CurrentArguments OptionalChaining .
 
-CurrentArguments -> ( ExpsListOpt )
+CurrentArguments -> par_o ExpsListOpt par_c .
 
 ExpsListOpt ->
     ExpsList |
-    λ
+      .
 
-ExpsList -> Exp ExpsTail
+ExpsList -> Exp ExpsTail .
 
 ExpsTail ->
-    , Exp ExpsTail |
-    λ
+    comma Exp ExpsTail |
+      .
 
 OptionalChaining ->
-    . idMetAt ChainAccess OptionalChaining |
-    λ
+    dot idMetAt ChainAccess OptionalChaining |
+      .
 
 ChainAccess ->
     CurrentArguments |
-    [ Exp ] |
-    λ
+    sqr_o Exp sqr_c |.

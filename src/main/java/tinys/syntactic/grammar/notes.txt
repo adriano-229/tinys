@@ -1,0 +1,24 @@
+grammar1.txt:
+    - set Vn to begin with uppercase
+    - set Vt to begin with lowercase or symbol
+
+grammar2.txt:
+    - replace ? rules:
+    A ::= B?
+    =>
+    A ::= B | #
+
+grammar3.txt:
+    - replace * rules:
+    A ::= AB∗
+    =>
+    A ::= A | ABList
+    BList ::= B BList | B
+
+grammar4.txt:
+    - grouped:
+        Def ::= Class | Impl
+        all rules with Opt(ional)
+    - factorized:
+        Class
+        AttributeList

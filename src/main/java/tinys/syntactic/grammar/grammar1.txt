@@ -1,122 +1,223 @@
-NOTES:
-	Vt's
-		begin with an ascii lowercase letter or any ascii symbol, e.g.: st void _Int _Array (Int)
-		# is the empty symbol (the epsylon)
-		when a space is encountered, the Vt ends
-	Vn's
-		begin with uppercase, e.g.: Sentence Attribute Type
-		when a space is encountered, the Vn ends
+Program ::=
+    DefsList Start
 
-Program ::= DefsList Start
+Start ::=
+    start MethodBlock
 
-Start ::= start MethodBlock
+DefsList ::=
+    Class DefsList |
+    Impl DefsList |
+    #
 
-DefsList ::= Class DefsList | Impl DefsList | #
+Class ::=
+    class idclass Inheritance? { Attribute∗ }
 
-Class ::= class idclass Inheritance? { Attribute∗ }
+Impl ::=
+    impl idclass { Member∗ }
 
-Impl ::= impl idclass { Member∗ }
+Inheritance ::=
+    : Type
 
-Inheritance ::= : Type
+Member ::=
+    Method |
+    Constructor
 
-Member ::= Method | Constructor
+Constructor ::=
+    . FormalArgs MethodBlock
 
-Constructor ::= . FormalArgs MethodBlock
+Attribute ::=
+    Visibility? Type VarsDeclList ;
 
-Attribute ::= Visibility? Type VarsDeclList ;
+Method ::=
+    MethodForm? fn MethodType? idMetAt FormalArgs MethodBlock
 
-Method ::= MethodForm? fn MethodType? idMetAt FormalArgs MethodBlock
+Visibility ::=
+    pub
 
-Visibility ::= pub
+MethodForm ::=
+    st
 
-MethodForm ::= st
+MethodBlock ::=
+    { LocalVarsDecl∗ Sentence∗ }
 
-MethodBlock ::= { LocalVarsDecl∗ Sentence∗ }
+LocalVarsDecl ::=
+    Type VarsDeclList ;
 
-LocalVarsDecl ::= Type VarsDeclList ;
+VarsDeclList ::=
+    idMetAt |
+    idMetAt , VarsDeclList
 
-VarsDeclList ::= idMetAt | idMetAt , VarsDeclList
+FormalArgs ::=
+    ( FormalArgsList? )
 
-FormalArgs ::= ( FormalArgsList? )
+FormalArgsList ::=
+    FormalArg , FormalArgsList |
+    FormalArg
 
-FormalArgsList ::= FormalArg , FormalArgsList | FormalArg
+FormalArg ::=
+    Type idMetAt
 
-FormalArg ::= Type idMetAt
+MethodType ::=
+    Type |
+    void
 
-MethodType ::= Type | void
+Type ::=
+    PrimitiveType |
+    ReferenceType |
+    ArrayType
 
-Type ::= PrimitiveType | ReferenceType | ArrayType
+PrimitiveType ::=
+    str |
+    bool |
+    int
 
-PrimitiveType ::= _Str | _Bool | _Int
+ReferenceType ::=
+    idclass
 
-ReferenceType ::= idclass
+ArrayType ::=
+    array PrimitiveType
 
-ArrayType ::= _Array PrimitiveType
+Sentence ::=
+    ; |
+    Assignment ; |
+    SimpleSentence ; |
+    if ( Exp ) Sentence |
+    if ( Exp ) Sentence else Sentence |
+    while ( Exp ) Sentence |
+    for ( PrimitiveType idMetAt in idMetAt ) Sentence |
+    Block |
+    ret Exp? ;
 
-Sentence ::= ; | Assignment ; | SimpleSentence ; | if ( Exp ) Sentence | if ( Exp ) Sentence else Sentence | while ( Exp ) Sentence | for ( PrimitiveType idMetAt in idMetAt ) Sentence | Block | ret Exp? ;
+Block ::=
+    { Sentence∗ }
 
-Block ::= { Sentence∗ }
+Assignment ::=
+    SimpleVarAccess = Exp |
+    SimpleSelfAccess = Exp
 
-Assignment ::= SimpleVarAccess = Exp | SimpleSelfAccess = Exp
+SimpleVarAccess ::=
+    id SimpleChaining∗ |
+    id [ Exp ]
 
-SimpleVarAccess ::= id SimpleChaining∗ | id [ Exp ]
+SimpleSelfAccess ::=
+    self SimpleChaining∗
 
-SimpleSelfAccess ::= self SimpleChaining∗
+SimpleChaining ::=
+    . id
 
-SimpleChaining ::= . id
+SimpleSentence ::=
+    ( Exp )
 
-SimpleSentence ::= ( Exp )
+Exp ::=
+    OrExp
 
-Exp ::= OrExp
+OrExp ::=
+    OrExp \\ AndExp |
+    AndExp
 
-OrExp ::= OrExp \\ AndExp | AndExp
+AndExp ::=
+    AndExp && EqExp |
+    EqExp
 
-AndExp ::= AndExp && EqExp | EqExp
+EqExp ::=
+    EqExp EqOp CompoundExp |
+    CompoundExp
 
-EqExp ::= EqExp EqOp CompoundExp | CompoundExp
+CompoundExp ::=
+    AdExp CompoundOp AdExp |
+    AdExp
 
-CompoundExp ::= AdExp CompoundOp AdExp | AdExp
+AdExp ::=
+    AdExp AddOp MultExp |
+    MultExp
 
-AdExp ::= AdExp AddOp MultExp | MultExp
+MultExp ::=
+    MultExp MultOp UnaryExp |
+    UnaryExp
 
-MultExp ::= MultExp MultOp UnaryExp | UnaryExp
+UnaryExp ::=
+    UnaryOp UnaryExp |
+    Operand
 
-UnaryExp ::= UnaryOp UnaryExp | Operand
+EqOp ::=
+    == |
+    !=
 
-EqOp ::= == | !=
+CompoundOp ::=
+    < |
+    > |
+    <= |
+    >=
 
-CompoundOp ::= < | > | <= | >=
+AddOp ::=
+    + |
+    -
 
-AddOp ::= + | -
+UnaryOp ::=
+    + |
+    - |
+    ! |
+    ++ |
+    -- |
+    (Int)
 
-UnaryOp ::= + | - | ! | ++ |-- | (Int)
+MultOp ::=
+    * |
+    /
 
-MultOp ::= * | /
+Operand ::=
+    Literal |
+    Primary Chaining?
 
-Operand ::= Literal | Primary Chaining?
+Literal ::=
+    nil |
+    true |
+    false |
+    intLiteral |
+    strLiteral
 
-Literal ::= nil | true | false | intLiteral | _StrLiteral
+Primary ::=
+    BracketedExp |
+    SelfAccess |
+    VarAccess |
+    MethodCall |
+    StaticMethodCall |
+    ClassConstructorCall
 
-Primary ::= BracketedExp | SelfAccess | VarAccess | MethodCall | StaticMethodCall | ClassConstructorCall
+BracketedExp ::=
+    ( Exp ) Chaining?
 
-BracketedExp ::= ( Exp ) Chaining?
+SelfAccess ::=
+    self Chaining?
 
-SelfAccess ::= self Chaining?
+VarAccess ::=
+    id Chaining? |
+    id [ Exp ] Chaining?
 
-VarAccess ::= id Chaining? | id [ Exp ] Chaining?
+MethodCall ::=
+    id CurrentArgs Chaining?
 
-MethodCall ::= id CurrentArgs Chaining?
+StaticMethodCall ::=
+    idclass . MethodCall Chaining?
 
-StaticMethodCall ::= idclass . MethodCall Chaining?
+ClassConstructorCall ::=
+    new idclass CurrentArgs Chaining? |
+    new PrimitiveType [ Exp ]
 
-ClassConstructorCall ::= new idclass CurrentArgs Chaining? | new PrimitiveType [ Exp ]
+CurrentArgs ::=
+    ( ExpsList? )
 
-CurrentArgs ::= ( ExpsList? )
+ExpsList ::=
+    Exp |
+    Exp , ExpsList
 
-ExpsList ::= Exp | Exp , ExpsList
+Chaining ::=
+    . ChainedMethodCall |
+    . ChainedVarAccess
 
-Chaining ::= . ChainedMethodCall | . ChainedVarAccess
+ChainedMethodCall ::=
+    id CurrentArgs Chaining?
 
-ChainedMethodCall ::= id CurrentArgs Chaining?
-
-ChainedVarAccess ::= id Chaining? | id [ Exp ] Chaining?
+ChainedVarAccess ::=
+    id Chaining? |
+    id [ Exp ] Chaining?

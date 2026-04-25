@@ -1,277 +1,299 @@
-Program ->
-    DefsList Start |
+Program ::=
+    DefList Start |
     Start
 
-DefsList ->
-    Class DefsList |
-    Impl DefsList |
+
+DefList ::=
+    Def DefList |
+    Def
+
+Def ::=
     Class |
     Impl
 
-Start ->
+Start ::=
     start MethodBlock
 
-Class ->
-    class idclass Inheritance { AttributeRep } |
-    class idclass { AttributeRep } |
-    class idclass Inheritance { } |
-    class idclass { }
+Class ::=
+    class idclass InheritanceOpt { AttributeListOpt }
 
-AttributeRep ->
-    Attribute AttributeRep |
-    Attribute
+InheritanceOpt ::=
+    Inheritance |
+    λ
 
-Impl ->
-    impl idclass { MemberRep } |
-    impl idclass { }
-
-MemberRep ->
-    Member MemberRep |
-    Member
-
-Inheritance ->
+Inheritance ::=
     : Type
 
-Member ->
+AttributeListOpt ::=
+    AttributeList |
+    λ
+
+AttributeList ::=
+    Attribute AttributeList |
+    Attribute
+
+AttributeList
+
+Attribute ::=
+    VisibilityOpt Type VarsDeclList ;
+
+VisibilityOpt ::=
+    Visibility |
+    λ
+
+Visibility ::=
+    pub
+
+Impl ::=
+    impl idclass { MemberListOpt }
+
+MemberListOpt ::=
+    MemberList |
+    λ
+
+MemberList ::=
+    Member MemberList |
+    Member
+
+Member ::=
     Method |
     Constructor
 
-Constructor ->
+Constructor ::=
     . FormalArgs MethodBlock
 
-Attribute ->
-    Visibility Type VarsDeclList ; |
-    Type VarsDeclList ;
+Method ::=
+    MethodForm fn MethodSignatureAndBody |
+    fn MethodSignatureAndBody
 
-Method ->
-    MethodForm fn MethodType idMetAt FormalArgs MethodBlock |
-    fn MethodType idMetAt FormalArgs MethodBlock |
-    MethodForm fn idMetAt FormalArgs MethodBlock |
-    fn idMetAt FormalArgs MethodBlock
-
-Visibility ->
-    pub
-
-MethodForm ->
+MethodForm ::=
     st
 
-MethodBlock ->
-    { LocalVarsDeclRep SentenceRep } |
-    { LocalVarsDeclRep } |
-    { SentenceRep } |
-    { }
+MethodSignatureAndBody ::=
+    MethodTypeOpt idMetAt FormalArgs MethodBlock
 
-LocalVarsDeclRep ->
-    LocalVarsDecl LocalVarsDeclRep |
-    LocalVarsDecl
+MethodTypeOpt ::=
+    MethodType |
+    λ
 
-SentenceRep ->
-    Sentence SentenceRep |
-    Sentence
-
-LocalVarsDecl ->
-    Type VarsDeclList ;
-
-VarsDeclList ->
-    idMetAt |
-    idMetAt , VarsDeclList
-
-FormalArgs ->
-    ( FormalArgsList ) |
-    ( )
-
-FormalArgsList ->
-    FormalArg , FormalArgsList |
-    FormalArg
-
-FormalArg ->
-    Type idMetAt
-
-MethodType ->
+MethodType ::=
     Type |
     void
 
-Type ->
+MethodBlock ::=
+    { LocalVarsDeclListOpt SentenceListOpt }
+
+LocalVarsDeclListOpt ::=
+    LocalVarsDeclList |
+    λ
+
+LocalVarsDeclList ::=
+    LocalVarsDecl LocalVarsDeclList |
+    LocalVarsDecl
+
+LocalVarsDecl ::= Type VarsDeclList ;
+
+VarsDeclList ::= idMetAt VarsDeclTail
+
+VarsDeclTail ::=
+    , idMetAt VarsDeclTail |
+    λ
+
+FormalArgs ::= ( FormalArgsListOpt )
+
+FormalArgsListOpt ::=
+    FormalArgsList |
+    λ
+
+FormalArgsList ::= FormalArg FormalArgsTail
+
+FormalArgsTail ::=
+    , FormalArg FormalArgsTail |
+    λ
+
+FormalArg ::= Type idMetAt
+
+Type ::=
+    ArrayType
     PrimitiveType |
     ReferenceType |
-    ArrayType
 
-PrimitiveType ->
-    _Str |
+PrimitiveType ::=
+    _Int |
     _Bool |
-    _Int
+    _Str
 
-ReferenceType ->
-    idclass
+ReferenceType ::= idclass
 
-ArrayType ->
-    _Array PrimitiveType
+ArrayType ::= _Array PrimitiveType
 
-Sentence ->
+SentenceListOpt ::=
+    SentenceList |
+    λ
+
+SentenceList ::=
+    Sentence SentenceList |
+    Sentence
+
+Sentence ::=
     ; |
     Assignment ; |
     SimpleSentence ; |
-    if ( Exp ) Sentence |
-    if ( Exp ) Sentence else Sentence |
+    if ( Exp ) Sentence ElseOpt |
     while ( Exp ) Sentence |
     for ( PrimitiveType idMetAt in idMetAt ) Sentence |
     Block |
-    ret Exp ; |
-    ret ;
+    ret RetOpt ;
 
-Block ->
-    { SentenceRep } |
-    { }
+ElseOpt ::=
+    else Sentence |
+    λ
 
-SentenceRep ->
-    Sentence SentenceRep |
-    Sentence
+RetOpt ::=
+    Exp |
+    λ
 
-Assignment ->
-    SimpleVarAccess = Exp |
-    SimpleSelfAccess = Exp
+Block ::= { SentenceListOpt }
 
-SimpleVarAccess ->
-    id SimpleChainingRep |
-    id [ Exp ] |
-    id
+Assignment ::= Assignable = Exp
 
-SimpleSelfAccess ->
-    self SimpleChainingRep |
-    self
+Assignable ::=
+    self SelfChainOpt |
+    idMetAt AssignableTail
 
-SimpleChainingRep ->
-    SimpleChaining SimpleChainingRep |
-    SimpleChaining
+SelfChainOpt ::=
+    . idMetAt SelfChainOpt |
+    λ
 
-SimpleChaining ->
-    . id
+AssignableTail ::=
+    . idMetAt AssignableTail |
+    [ Exp ] AssignableTail |
+    λ
 
-SimpleSentence ->
-    ( Exp )
+SimpleSentence ::= ( Exp )
 
-Exp ->
-    OrExp
+Exp ::= OrExp
 
-OrExp ->
-    OrExp \\ AndExp |
-    AndExp
+OrExp ::= AndExp OrExpTail
 
-AndExp ->
-    AndExp && EqExp |
-    EqExp
+OrExpTail ::=
+    or AndExp OrExpTail |
+    λ
 
-EqExp ->
-    EqExp EqOp CompoundExp |
-    CompoundExp
+AndExp ::= EqExp AndExpTail
 
-CompoundExp ->
-    AdExp CompoundOp AdExp |
-    AdExp
+AndExpTail ::=
+    and EqExp AndExpTail |
+    λ
 
-AdExp ->
-    AdExp AddOp MultExp |
-    MultExp
+EqExp ::= CompoundExp EqExpTail
 
-MultExp ->
-    MultExp MultOp UnaryExp |
-    UnaryExp
+EqExpTail ::=
+    EqOp CompoundExp EqExpTail |
+    λ
 
-UnaryExp ->
-    UnaryOp UnaryExp |
-    Operand
-
-EqOp ->
+EqOp ::=
     == |
     !=
 
-CompoundOp ->
+CompoundExp ::= AddExp CompoundExpTail
+
+CompoundExpTail ::=
+    CompoundOp AddExp CompoundExpTail |
+    λ
+
+CompoundOp ::=
     < |
     > |
     <= |
     >=
 
-AddOp ->
+AddExp ::= MultExp AddExpTail
+
+AddExpTail ::=
+    AddOp MultExp AddExpTail |
+    λ
+
+AddOp ::=
     + |
     -
 
-UnaryOp ->
+MultExp ::= UnaryExp MultExpTail
+
+MultExpTail ::=
+    MultOp UnaryExp MultExpTail |
+    λ
+
+MultOp ::=
+    * |
+    / |
+    %
+
+UnaryExp ::=
+    UnaryOp UnaryExp |
+    Operand
+
+UnaryOp ::=
     + |
     - |
-    ! |
-    ++ |-
-    - |
-    (Int)
+    !
 
-MultOp ->
-    * |
-    /
-
-Operand ->
+Operand ::=
     Literal |
-    Primary Chaining |
     Primary
 
-Literal ->
-    nil |
+Literal ::=
+    intLiteral |
     true |
     false |
-    intLiteral |
-    _StrLiteral
+    _StrLiteral |
+    nil
 
-Primary ->
-    BracketedExp |
-    SelfAccess |
-    VarsAccess |
-    MethodCall |
-    StaticMethodCall |
-    ClassConstructorCall
+Primary ::=
+    BracketedExp OptionalChaining |
+    self OptionalChaining |
+    NewExpr |
+    StaticCallOrRef |
+    IdPrimary
 
-BracketedExp ->
-    ( Exp ) Chaining |
-    ( Exp )
+BracketedExp ::= ( Exp )
 
-SelfAccess ->
-    self Chaining |
-    self
+IdPrimary ::= idMetAt IdPrimaryTail OptionalChaining
 
-VarsAccess ->
-    id Chaining |
-    id [ Exp ] Chaining |
-    id |
-    id [ Exp ]
+IdPrimaryTail ::=
+    CurrentArguments |
+    [ Exp ] |
+    λ
 
-MethodCall ->
-    id CurrentArguments Chaining |
-    id CurrentArguments
+StaticCallOrRef ::= idclass StaticCallTail OptionalChaining
 
-StaticMethodCall ->
-    idclass . MethodCall Chaining |
-    idclass . MethodCall
+StaticCallTail ::=
+    . idMetAt CurrentArguments |
+    λ
 
-ClassConstructorCall ->
-    new idclass CurrentArguments Chaining |
-    new PrimitiveType [ Exp ] |
-    new idclass CurrentArguments
+NewExpr ::= new NewTail
 
-CurrentArguments ->
-    ( ExpsList ) |
-    ( )
+NewTail ::=
+    PrimitiveType [ Exp ] |
+    idclass CurrentArguments OptionalChaining
 
-ExpsList ->
-    Exp |
-    Exp , ExpsList
+CurrentArguments ::= ( ExpsListOpt )
 
-Chaining ->
-    . ChainedMethodCall |
-    . ChainedVarAccess
+ExpsListOpt ::=
+    ExpsList |
+    λ
 
-ChainedMethodCall ->
-    id CurrentArguments Chaining |
-    id CurrentArguments
+ExpsList ::= Exp ExpsTail
 
-ChainedVarAccess ->
-    id Chaining |
-    id [ Exp ] Chaining |
-    id |
-    id [ Exp ]
+ExpsTail ::=
+    , Exp ExpsTail |
+    λ
+
+OptionalChaining ::=
+    . idMetAt ChainAccess OptionalChaining |
+    λ
+
+ChainAccess ::=
+    CurrentArguments |
+    [ Exp ] |
+    λ
