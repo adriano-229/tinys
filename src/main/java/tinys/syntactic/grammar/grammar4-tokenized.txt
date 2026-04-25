@@ -1,0 +1,288 @@
+Program ->
+    DefList Start .
+
+DefList ->
+    Def DefList |
+     .
+
+Def ->
+    Class |
+    Impl .
+
+Start ->
+    start MethodBlock .
+
+Class ->
+    class idClass InheritanceOpt bra_o AttributeList bra_c .
+
+InheritanceOpt ->
+    colon Type |
+     .
+
+AttributeList ->
+    Attribute AttributeList |
+     .
+
+Attribute ->
+    VisibilityOpt Type idMetAt VarDeclList semicolon .
+
+VisibilityOpt ->
+    pub |
+     .
+
+Impl ->
+    impl idClass bra_o MemberList bra_c .
+
+MemberList ->
+    Member MemberList |
+     .
+
+Member ->
+    Method |
+    Constructor .
+
+Constructor ->
+    dot FormalArgs MethodBlock .
+
+Method ->
+    MethodFormOpt fn MethodSignatureAndBody .
+
+MethodFormOpt ->
+    st |
+     .
+
+MethodSignatureAndBody ->
+    MethodTypeOpt idMetAt FormalArgs MethodBlock .
+
+MethodTypeOpt ->
+    Type |
+    void |
+     .
+
+MethodBlock ->
+    bra_o LocalVarDeclList SentenceList bra_c .
+
+LocalVarDeclList ->
+    LocalVarDecl LocalVarDeclList |
+     .
+
+LocalVarDecl ->
+    Type idMetAt VarDeclList semicolon .
+
+VarDeclList ->
+    idMetAt VarDeclTail |
+     .
+
+VarDeclTail ->
+    comma idMetAt VarDeclTail |
+     .
+
+FormalArgs ->
+    par_o FormalArgsList par_c .
+
+FormalArgsList ->
+    FormalArg FormalArgsTail |
+     .
+
+FormalArgsTail ->
+    comma FormalArg FormalArgsTail |
+     .
+
+FormalArg ->
+    Type idMetAt .
+
+Type ->
+    ArrayType
+    PrimitiveType |
+    ReferenceType .
+
+ArrayType ->
+    array PrimitiveType .
+
+PrimitiveType ->
+    int |
+    bool |
+    str .
+
+ReferenceType ->
+    idClass .
+
+SentenceList ->
+    Sentence SentenceList |
+     .
+
+Sentence ->
+    semicolon |
+    Assignment semicolon |
+    SimpleSentence semicolon |
+    if par_o Exp par_c Sentence ElseOpt |
+    while par_o Exp par_c Sentence |
+    for par_o PrimitiveType idMetAt in idMetAt par_c Sentence |
+    Block |
+    ret RetOpt semicolon .
+
+ElseOpt ->
+    else Sentence |
+     .
+
+RetOpt ->
+    Exp |
+     .
+
+Block ->
+    bra_o SentenceList bra_c .
+
+Assignment ->
+    Assignable eq Exp .
+
+Assignable ->
+    idMetAt VarAccessTail
+    self SelfAccessTail | .
+
+SelfAccessTail ->
+    dot idMetAt SelfAccessTail |
+     .
+
+VarAccessTail ->
+    dot idMetAt VarAccessTail |
+    sqr_o Exp sqr_c VarAccessTail |
+     .
+
+SimpleSentence ->
+    par_o Exp par_c .
+
+Exp ->
+    OrExp .
+
+OrExp ->
+    AndExp OrExpTail .
+
+OrExpTail ->
+    or AndExp OrExpTail |
+     .
+
+AndExp ->
+    EqExp AndExpTail .
+
+AndExpTail ->
+    and EqExp AndExpTail |
+     .
+
+EqExp ->
+    CompoundExp EqExpTail .
+
+EqExpTail ->
+    EqOp CompoundExp EqExpTail |
+     .
+
+CompoundExp ->
+    AddExp CompoundExpTail .
+
+CompoundExpTail ->
+    CompoundOp AddExp CompoundExpTail |
+     .
+
+AddExp ->
+    MultExp AddExpTail .
+
+AddExpTail ->
+    AddOp MultExp AddExpTail |
+     .
+
+MultExp ->
+    UnaryExp MultExpTail .
+
+MultExpTail ->
+    MultOp UnaryExp MultExpTail |
+     .
+
+UnaryExp ->
+    UnaryOp UnaryExp |
+    Operand .
+
+EqOp ->
+    eqeq |
+    ineq .
+
+CompoundOp ->
+    less |
+    great |
+    lesseq |
+    greateq .
+
+AddOp ->
+    plus |
+    minus .
+
+MultOp ->
+    mult |
+    div .
+
+UnaryOp ->
+    plus |
+    minus |
+    not |
+    plusplus |
+    minusminus .
+
+Operand ->
+    Literal |
+    Primary .
+
+Literal ->
+    nil |
+    true |
+    false |
+    intLiteral |
+    strLiteral .
+
+Primary ->
+    BracketedExp |
+    SelfAccess |
+    StaticMethodCall |
+    ClassConstructorCall |
+    IdPrimary .
+
+BracketedExp ->
+    par_o Exp par_c ChainingOpt .
+
+SelfAccess ->
+    self ChainingOpt .
+
+IdPrimary ->
+    idMetAt IdPrimaryTail ChainingOpt .
+
+IdPrimaryTail ->
+    CurrentArguments |
+    sqr_o Exp sqr_c |
+     .
+
+StaticMethodCall ->
+    idClass dot idMetAt CurrentArguments ChainingOpt .
+
+ClassConstructorCall ->
+    new ClassConstructorCallTail .
+
+ClassConstructorCallTail ->
+    idClass CurrentArguments ChainingOpt |
+    PrimitiveType sqr_o Exp sqr_c .
+
+CurrentArguments ->
+    par_o ExpsList par_c .
+
+ExpsList ->
+    Exp ExpsTail |
+     .
+
+ExpsTail ->
+    comma Exp ExpsTail |
+     .
+
+ChainingOpt ->
+    dot idMetAt ChainBindOpt ChainingOpt |
+     .
+
+ChainBindOpt ->
+    CurrentArguments |
+    sqr_o Exp sqr_c |
+     .

@@ -1,7 +1,6 @@
 Program ::=
     DefList Start
 
-
 DefList ::=
     Def DefList |
     λ
@@ -231,6 +230,13 @@ Operand ::=
     Literal |
     Primary
 
+Literal ::=
+    nil |
+    true |
+    false |
+    intLiteral |
+    strLiteral
+
 Primary ::=
     BracketedExp |
     SelfAccess |
@@ -251,7 +257,6 @@ IdPrimaryTail ::=
     CurrentArguments |
     [ Exp ] |
     λ
-
 
 StaticMethodCall ::=
     idclass . idMetAt CurrentArguments ChainingOpt
