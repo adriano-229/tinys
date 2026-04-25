@@ -207,17 +207,17 @@ MultOp ::=
     * |
     /
 
-Operand ::=
-    Literal |
-    Primary Chaining |
-    Primary
-
 Literal ::=
     nil |
     true |
     false |
     intLiteral |
     strLiteral
+
+Operand ::=
+    Literal |
+    Primary Chaining |
+    Primary
 
 Primary ::=
     BracketedExp |

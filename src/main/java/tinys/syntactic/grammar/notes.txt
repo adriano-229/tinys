@@ -16,9 +16,367 @@ grammar3.txt:
     BList ::= B BList | B
 
 grammar4.txt:
-    - grouped:
-        Def ::= Class | Impl
-        all rules with Opt(ional)
-    - factorized:
-        Class
-        AttributeList
+    - λ productions are always present in Opt, List and Tail ending rules
+    - Operand ::= Literal | Primary ChainingOpt is ambiguous, as all Primary derivations can be followed by ChainingOpt => Operand ::= Literal | Primary
+    here, it is being allowed only one level of postfix/chaining
+    Same goes for StaticMethodCall and MethodCall
+
+
+Hay que eliminar los conflictos de la tabla en la que se pueden derivar 2 reglas, 1 de ellas con λ.
+
+1) Vemos que TODAS las reglas que utilizan Chaining en su producción, también tienen la producción sin ella. Es decir,
+existe A => B Chaining | B. Lo que hacemos es quitar todas las reglas A => B al incorporar en Chaining la producción λ,
+es decir, ahora Chaining => ... | λ.
+
+De esto:
+
+Operand ::=
+    Literal |
+    Primary Chaining |
+    Primary
+
+Primary ::=
+    BracketedExp |
+    SelfAccess |
+    VarsAccess |
+    MethodCall |
+    StaticMethodCall |
+    ClassConstructorCall
+
+BracketedExp ::=
+    ( Exp ) Chaining |
+    ( Exp )
+
+SelfAccess ::=
+    self Chaining |
+    self
+
+VarsAccess ::=
+    idMetAt Chaining |
+    idMetAt [ Exp ] Chaining |
+    idMetAt |
+    idMetAt [ Exp ]
+
+MethodCall ::=
+    idMetAt CurrentArguments Chaining |
+    idMetAt CurrentArguments
+
+StaticMethodCall ::=
+    idclass . MethodCall Chaining |
+    idclass . MethodCall
+
+ClassConstructorCall ::=
+    new idclass CurrentArguments Chaining |
+    new PrimitiveType [ Exp ] |
+    new idclass CurrentArguments
+
+CurrentArguments ::=
+    ( ExpsList ) |
+    ( )
+
+ExpsList ::=
+    Exp |
+    Exp , ExpsList
+
+Chaining ::=
+    . ChainedMethodCall |
+    . ChainedVarAccess
+
+ChainedMethodCall ::=
+    idMetAt CurrentArguments Chaining |
+    idMetAt CurrentArguments
+
+ChainedVarAccess ::=
+    idMetAt Chaining |
+    idMetAt [ Exp ] Chaining |
+    idMetAt |
+    idMetAt [ Exp ]
+
+
+Pasamos a esto:
+
+Operand ::=
+    Literal |
+    Primary ChainingOpt
+
+Primary ::=
+    BracketedExp |
+    SelfAccess |
+    VarsAccess |
+    MethodCall |
+    StaticMethodCall |
+    ClassConstructorCall
+
+BracketedExp ::=
+    ( Exp ) ChainingOpt
+
+SelfAccess ::=
+    self ChainingOpt
+
+VarsAccess ::=
+    idMetAt ChainingOpt |
+    idMetAt [ Exp ] ChainingOpt
+
+MethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+StaticMethodCall ::=
+    idclass . MethodCall ChainingOpt
+
+ClassConstructorCall ::=
+    new idclass CurrentArguments ChainingOpt |
+    new PrimitiveType [ Exp ] |
+
+CurrentArguments ::=
+    ( ExpsList ) |
+    ( )
+
+ExpsList ::=
+    Exp |
+    Exp , ExpsList
+
+ChainingOpt ::=
+    . ChainedMethodCall |
+    . ChainedVarAccess |
+    λ
+
+ChainedMethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+ChainedVarAccess ::=
+    idMetAt ChainingOpt |
+    idMetAt [ Exp ] ChainingOpt
+
+
+Factorizamos ClassConstructorCall
+Reescribimos VarAccess
+
+Operand ::=
+    Literal |
+    Primary ChainingOpt
+
+Primary ::=
+    BracketedExp |
+    SelfAccess |
+    VarsAccess |
+    MethodCall |
+    StaticMethodCall |
+    ClassConstructorCall
+
+BracketedExp ::=
+    ( Exp ) ChainingOpt
+
+SelfAccess ::=
+    self ChainingOpt
+
+VarsAccess ::=
+    idMetAt VarAccessAuxOpt ChainingOpt
+
+VarAccessAuxOpt ::=
+	[ Exp ] |
+	λ
+
+MethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+StaticMethodCall ::=
+    idclass . MethodCall ChainingOpt
+
+ClassConstructorCall ::=
+    new ClassConstructorCallTail
+
+ClassConstructorCallTail ::=
+	idclass CurrentArguments ChainingOpt |
+    PrimitiveType [ Exp ]
+
+CurrentArguments ::=
+    ( ExpsList ) |
+    ( )
+
+ExpsList ::=
+    Exp |
+    Exp , ExpsList
+
+ChainingOpt ::=
+    . ChainedMethodCall |
+    . ChainedVarAccess |
+    λ
+
+ChainedMethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+ChainedVarAccess ::=
+    idMetAt ChainingOpt |
+    idMetAt [ Exp ] ChainingOpt
+
+
+Cambiamos:
+
+CurrentArguments ::=
+    ( ExpsList ) |
+    ( )
+
+ExpsList ::=
+    Exp |
+    Exp , ExpsList
+
+Por:
+
+CurrentArguments ::=
+    ( ExpsList )
+
+ExpsList ::=
+    Exp ExpsTail |
+    λ
+
+ExpsTail ::=
+    , Exp ExpsTail |
+    λ
+
+
+
+
+Cambiamos:
+
+ChainingOpt ::=
+    . ChainedMethodCall |
+    . ChainedVarAccess |
+    λ
+
+ChainedMethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+ChainedVarAccess ::=
+    idMetAt ChainingOpt |
+    idMetAt [ Exp ] ChainingOpt
+
+
+Por:
+
+ChainingOpt ::=
+    . idMetAt ChainedBind
+    λ
+
+ChainedBind ::=
+	CurrentArguments ChainingOpt |
+	VarAccessAuxOpt ChainingOpt
+
+
+
+Y ahora toca pensar...
+Vemos que TODAS las derivaciones de Primary (BracketedExp, VarsAccess,...) son reglas que derivan en ChainingOpt, por
+ejemplo:
+
+BracketedExp ::=
+    ( Exp ) ChainingOpt
+
+SelfAccess ::=
+    self ChainingOpt
+
+
+Luego, se puede quitar ChainingOpt de Operand
+
+Operand ::=
+    Literal |
+    Primary ChainingOpt
+
+A:
+
+
+Operand ::=
+    Literal |
+    Primary
+
+
+De esta manera estamos "forzando" a que el chaining esté relacionado con el Primary más interno, que es lo esperado.
+Quitando ExpList y VarAccessAuxOpt, ya que ya están resueltos, la gramática resultante es:
+
+Operand ::=
+    Literal |
+    Primary
+
+Primary ::=
+    BracketedExp |
+    SelfAccess |
+    VarsAccess |
+    MethodCall |
+    StaticMethodCall |
+    ClassConstructorCall
+
+BracketedExp ::=
+    ( Exp ) ChainingOpt
+
+SelfAccess ::=
+    self ChainingOpt
+
+VarsAccess ::=
+    idMetAt VarAccessAuxOpt ChainingOpt
+
+MethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+StaticMethodCall ::=
+    idclass . MethodCall ChainingOpt
+
+ClassConstructorCall ::=
+    new ClassConstructorCallTail
+
+ClassConstructorCallTail ::=
+	idclass CurrentArguments ChainingOpt |
+    PrimitiveType [ Exp ]
+
+ChainingOpt ::=
+    . idMetAt ChainedBind
+    λ
+
+ChainedBind ::=
+	CurrentArguments ChainingOpt |
+	VarAccessAuxOpt ChainingOpt
+
+
+Nótese que ocurre lo mismo, pero a "menor" escala, entre
+
+MethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+StaticMethodCall ::=
+    idclass . MethodCall ChainingOpt
+
+
+Nuevamente volvemos a delegar el chaining a la entidad más interna: MethodCall:
+
+MethodCall ::=
+    idMetAt CurrentArguments ChainingOpt
+
+StaticMethodCall ::=
+    idclass . MethodCall
+
+
+
+Ahora, veamos qu VarsAccess y MethodCall comparten prefijos, eliminemos este indeterminismo indirecto factorizando
+"hacia arriba":
+
+IdPrimary ::= idMetAt IdPrimaryTail ChainingOpt
+IdPrimaryTail ::= CurrentArguments | VarAccessAuxOpt | λ
+
+
+Pero ahora no tenemos más a MethodCall, lo hemos suprimido, luego la regla:
+
+StaticMethodCall ::=
+    idclass . MethodCall
+
+    debe ser reescrita con el terminal que se podía usar anteriormente
+
+    StaticMethodCall ::= idclass . idMetAt CurrentArguments ChainingOpt
+
+
+
+
+
+
+
+
+
+
+
+

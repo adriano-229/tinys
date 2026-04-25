@@ -248,6 +248,7 @@ public class Parser {
     }
 
     private record LocalVarsDeclList(TypeRef typeRef, List<String> variableNames) {}
+
     private LocalVarsDeclList parseLocalVarDecl() {
         TypeRef typeRef = parseType();
         List<String> variableNames = parseVarsDeclList();

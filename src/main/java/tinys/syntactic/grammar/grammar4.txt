@@ -25,7 +25,7 @@ AttributeList ::=
     λ
 
 Attribute ::=
-    VisibilityOpt Type VarsDeclList ;
+    VisibilityOpt Type idMetAt VarDeclList ;
 
 VisibilityOpt ::=
     pub |
@@ -61,40 +61,41 @@ MethodTypeOpt ::=
     λ
 
 MethodBlock ::=
-    { LocalVarsDeclList SentenceListOpt }
+    { LocalVarDeclList SentenceList }
 
-LocalVarsDeclList ::=
-    LocalVarsDecl LocalVarsDeclList |
+LocalVarDeclList ::=
+    LocalVarDecl LocalVarDeclList |
     λ
 
-LocalVarsDecl ::=
-    Type VarsDeclList ;
+LocalVarDecl ::=
+    Type idMetAt VarDeclList ;
 
-VarsDeclList ::=
-    idMetAt VarsDeclTail
-
-VarsDeclTail ::=
-    , idMetAt VarsDeclTail |
+VarDeclList ::=
+    idMetAt VarDeclTail |
     λ
 
-FormalArgs ::= ( FormalArgsListOpt )
-
-FormalArgsListOpt ::=
-    FormalArgsList |
+VarDeclTail ::=
+    , idMetAt VarDeclTail |
     λ
 
-FormalArgsList ::= FormalArg FormalArgsTail
+FormalArgs ::=
+    ( FormalArgsList )
+
+FormalArgsList ::=
+    FormalArg FormalArgsTail |
+    λ
 
 FormalArgsTail ::=
     , FormalArg FormalArgsTail |
     λ
 
-FormalArg ::= Type idMetAt
+FormalArg ::= 
+    Type idMetAt
 
 Type ::=
     ArrayType
     PrimitiveType |
-    ReferenceType |
+    ReferenceType
 
 ArrayType ::=
     array PrimitiveType
@@ -129,54 +130,80 @@ RetOpt ::=
     Exp |
     λ
 
-Block ::= { SentenceListOpt }
+Block ::= 
+    { SentenceList }
 
-Assignment ::= Assignable = Exp
+Assignment ::= 
+    Assignable = Exp
 
 Assignable ::=
-    self SelfChainOpt |
-    idMetAt AssignableTail
+    idMetAt VarAccessTail
+    self SelfAccessTail |
 
-SelfChainOpt ::=
-    . idMetAt SelfChainOpt |
+SelfAccessTail ::=
+    . idMetAt SelfAccessTail |
     λ
 
-AssignableTail ::=
-    . idMetAt AssignableTail |
-    [ Exp ] AssignableTail |
+VarAccessTail ::=
+    . idMetAt VarAccessTail |
+    [ Exp ] VarAccessTail |
     λ
 
-SimpleSentence ::= ( Exp )
+SimpleSentence ::=
+    ( Exp )
 
-Exp ::= OrExp
+Exp ::= 
+    OrExp
 
-OrExp ::= AndExp OrExpTail
+OrExp ::= 
+    AndExp OrExpTail
 
 OrExpTail ::=
-    or AndExp OrExpTail |
+    \\ AndExp OrExpTail |
     λ
 
-AndExp ::= EqExp AndExpTail
+AndExp ::= 
+    EqExp AndExpTail
 
 AndExpTail ::=
-    and EqExp AndExpTail |
+    && EqExp AndExpTail |
     λ
 
-EqExp ::= CompoundExp EqExpTail
+EqExp ::= 
+    CompoundExp EqExpTail
 
 EqExpTail ::=
     EqOp CompoundExp EqExpTail |
     λ
 
-EqOp ::=
-    == |
-    !=
-
-CompoundExp ::= AddExp CompoundExpTail
+CompoundExp ::=
+    AddExp CompoundExpTail
 
 CompoundExpTail ::=
     CompoundOp AddExp CompoundExpTail |
     λ
+
+AddExp ::= 
+    MultExp AddExpTail
+
+AddExpTail ::=
+    AddOp MultExp AddExpTail |
+    λ
+
+MultExp ::=
+    UnaryExp MultExpTail
+
+MultExpTail ::=
+    MultOp UnaryExp MultExpTail |
+    λ
+
+UnaryExp ::=
+    UnaryOp UnaryExp |
+    Operand
+
+EqOp ::=
+    == |
+    !=
 
 CompoundOp ::=
     < |
@@ -184,92 +211,74 @@ CompoundOp ::=
     <= |
     >=
 
-AddExp ::= MultExp AddExpTail
-
-AddExpTail ::=
-    AddOp MultExp AddExpTail |
-    λ
-
 AddOp ::=
     + |
     -
 
-MultExp ::= UnaryExp MultExpTail
-
-MultExpTail ::=
-    MultOp UnaryExp MultExpTail |
-    λ
-
 MultOp ::=
     * |
-    / |
-    %
+    /
 
-UnaryExp ::=
-    UnaryOp UnaryExp |
-    Operand
 
 UnaryOp ::=
     + |
     - |
-    !
+    ! |
+    ++ |
+    --
 
 Operand ::=
     Literal |
     Primary
 
-Literal ::=
-    intLiteral |
-    true |
-    false |
-    _StrLiteral |
-    nil
-
 Primary ::=
-    BracketedExp OptionalChaining |
-    self OptionalChaining |
-    NewExpr |
-    StaticCallOrRef |
+    BracketedExp |
+    SelfAccess |
+    StaticMethodCall |
+    ClassConstructorCall |
     IdPrimary
 
-BracketedExp ::= ( Exp )
+BracketedExp ::=
+    ( Exp ) ChainingOpt
 
-IdPrimary ::= idMetAt IdPrimaryTail OptionalChaining
+SelfAccess ::=
+    self ChainingOpt
+
+IdPrimary ::=
+    idMetAt IdPrimaryTail ChainingOpt
 
 IdPrimaryTail ::=
     CurrentArguments |
     [ Exp ] |
     λ
 
-StaticCallOrRef ::= idclass StaticCallTail OptionalChaining
 
-StaticCallTail ::=
-    . idMetAt CurrentArguments |
+StaticMethodCall ::=
+    idclass . idMetAt CurrentArguments ChainingOpt
+
+ClassConstructorCall ::=
+    new ClassConstructorCallTail
+
+ClassConstructorCallTail ::=
+    idclass CurrentArguments ChainingOpt |
+    PrimitiveType [ Exp ]
+
+CurrentArguments ::=
+    ( ExpsList )
+
+ExpsList ::=
+    Exp ExpsTail |
     λ
-
-NewExpr ::= new NewTail
-
-NewTail ::=
-    PrimitiveType [ Exp ] |
-    idclass CurrentArguments OptionalChaining
-
-CurrentArguments ::= ( ExpsListOpt )
-
-ExpsListOpt ::=
-    ExpsList |
-    λ
-
-ExpsList ::= Exp ExpsTail
 
 ExpsTail ::=
     , Exp ExpsTail |
     λ
 
-OptionalChaining ::=
-    . idMetAt ChainAccess OptionalChaining |
+ChainingOpt ::=
+    . idMetAt ChainBindOpt ChainingOpt |
     λ
 
-ChainAccess ::=
+ChainBindOpt ::=
     CurrentArguments |
     [ Exp ] |
     λ
