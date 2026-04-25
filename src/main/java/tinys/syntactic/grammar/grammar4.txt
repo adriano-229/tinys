@@ -1,11 +1,10 @@
 Program ::=
-    DefList Start |
-    Start
+    DefList Start
 
 
 DefList ::=
     Def DefList |
-    Def
+    λ
 
 Def ::=
     Class |
@@ -15,45 +14,29 @@ Start ::=
     start MethodBlock
 
 Class ::=
-    class idclass InheritanceOpt { AttributeListOpt }
+    class idclass InheritanceOpt { AttributeList }
 
 InheritanceOpt ::=
-    Inheritance |
-    λ
-
-Inheritance ::=
-    : Type
-
-AttributeListOpt ::=
-    AttributeList |
+    : Type |
     λ
 
 AttributeList ::=
     Attribute AttributeList |
-    Attribute
-
-AttributeList
+    λ
 
 Attribute ::=
     VisibilityOpt Type VarsDeclList ;
 
 VisibilityOpt ::=
-    Visibility |
+    pub |
     λ
-
-Visibility ::=
-    pub
 
 Impl ::=
-    impl idclass { MemberListOpt }
-
-MemberListOpt ::=
-    MemberList |
-    λ
+    impl idclass { MemberList }
 
 MemberList ::=
     Member MemberList |
-    Member
+    λ
 
 Member ::=
     Method |
@@ -63,37 +46,32 @@ Constructor ::=
     . FormalArgs MethodBlock
 
 Method ::=
-    MethodForm fn MethodSignatureAndBody |
-    fn MethodSignatureAndBody
+    MethodFormOpt fn MethodSignatureAndBody
 
-MethodForm ::=
-    st
+MethodFormOpt ::=
+    st |
+    λ
 
 MethodSignatureAndBody ::=
     MethodTypeOpt idMetAt FormalArgs MethodBlock
 
 MethodTypeOpt ::=
-    MethodType |
-    λ
-
-MethodType ::=
     Type |
-    void
+    void |
+    λ
 
 MethodBlock ::=
-    { LocalVarsDeclListOpt SentenceListOpt }
-
-LocalVarsDeclListOpt ::=
-    LocalVarsDeclList |
-    λ
+    { LocalVarsDeclList SentenceListOpt }
 
 LocalVarsDeclList ::=
     LocalVarsDecl LocalVarsDeclList |
-    LocalVarsDecl
+    λ
 
-LocalVarsDecl ::= Type VarsDeclList ;
+LocalVarsDecl ::=
+    Type VarsDeclList ;
 
-VarsDeclList ::= idMetAt VarsDeclTail
+VarsDeclList ::=
+    idMetAt VarsDeclTail
 
 VarsDeclTail ::=
     , idMetAt VarsDeclTail |
@@ -118,22 +96,20 @@ Type ::=
     PrimitiveType |
     ReferenceType |
 
+ArrayType ::=
+    array PrimitiveType
+
 PrimitiveType ::=
-    _Int |
-    _Bool |
-    _Str
+    int |
+    bool |
+    str
 
-ReferenceType ::= idclass
-
-ArrayType ::= _Array PrimitiveType
-
-SentenceListOpt ::=
-    SentenceList |
-    λ
+ReferenceType ::=
+    idclass
 
 SentenceList ::=
     Sentence SentenceList |
-    Sentence
+    λ
 
 Sentence ::=
     ; |
