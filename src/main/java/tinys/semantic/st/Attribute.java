@@ -11,6 +11,6 @@ public class Attribute {
     private final String name;
     private final boolean isPublic;
     private final TypeRef typeRef;
-    private Type type;
     private final int pos;
+    private Type type;
 }

@@ -6,7 +6,8 @@ import tinys.semantic.types.Type;
 
 import java.util.HashMap;
 
-@Getter @Setter
+@Getter
+@Setter
 public class Method {
     private final String name;
     private final HashMap<String, MethodParam> parameters = new HashMap<>();

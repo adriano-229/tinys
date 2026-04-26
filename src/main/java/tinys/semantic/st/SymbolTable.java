@@ -1,6 +1,7 @@
 package tinys.semantic.st;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import tinys.exceptions.SemanticException;
 import tinys.semantic.refs.ClassTypeRef;
 import tinys.semantic.refs.TypeRef;
@@ -13,7 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-@Getter @Setter
+@Getter
+@Setter
 public class SymbolTable {
     private final HashMap<String, ClassType> classes = new HashMap<>();         // Contiene las clases declaradas
     private final HashMap<Type, ArrayType> arrayTypes = new HashMap<>();    // Contiene los distintos tipos de array
